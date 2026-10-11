@@ -8,7 +8,7 @@
       content="Little Clip Factory: a small educational factory game about goals, guardrails and side effects. A simulation, not an AGI."
     />
     <title>Little Clip Factory</title>
-    <link rel="icon" type="image/png" href="/clipbot.png" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   </head>
   <body>
     <svg class="sprite" aria-hidden="true" focusable="false">
@@ -27,7 +27,7 @@
     <a class="skip-link" href="#controls" data-i18n="skip"></a>
 
     <header class="site-header">
-      <img class="logo" src="/clipbot.png" alt="" width="56" height="56" />
+      <img class="logo" src="/src/assets/clipbot.webp" alt="" width="56" height="56" />
       <div class="brand">
         <h1 data-i18n="pageTitle"></h1>
         <p class="tagline" data-i18n="tagline"></p>
@@ -42,11 +42,15 @@
     <main>
       <p class="sim-note" data-i18n="simNote"></p>
       <p id="storage-note" class="storage-note" role="status" hidden></p>
+      <div id="session-bar" class="session-bar" hidden>
+        <p id="session-note" role="status"></p>
+        <button type="button" id="continue-here" class="btn small" hidden></button>
+      </div>
 
       <section class="stage" aria-labelledby="stage-title">
         <h2 id="stage-title" class="visually-hidden" data-i18n="stageTitle"></h2>
         <div class="robot-wrap" id="robot-wrap">
-          <img id="robot" class="robot" src="/clipbot.png" alt="" width="1289" height="1209" />
+          <img id="robot" class="robot" src="/src/assets/clipbot.webp" alt="" width="1289" height="1221" />
         </div>
         <div class="story" aria-live="polite">
           <p class="phase-label" id="phase-label"></p>
@@ -133,6 +137,16 @@
             <button type="button" id="recover-wire" class="btn" hidden></button>
           </div>
           <p class="hint" id="market-hint"></p>
+          <div class="factory-timing">
+            <span id="session-active" class="hint" hidden></span>
+            <button type="button" id="toggle-run" class="btn"></button>
+            <div class="speed" role="group" aria-labelledby="speed-label">
+              <span id="speed-label" data-i18n="speed"></span>
+              <button type="button" class="chip" data-speed="1">1×</button>
+              <button type="button" class="chip" data-speed="5">5×</button>
+            </div>
+            <p class="hint" data-i18n="controlHint"></p>
+          </div>
         </div>
 
         <div class="panel">
@@ -171,30 +185,23 @@
           </fieldset>
         </div>
 
-        <div class="panel">
+        <div class="panel reset-panel">
           <h3 data-i18n="controlTitle"></h3>
           <div class="actions">
-            <button type="button" id="toggle-run" class="btn"></button>
-            <div class="speed" role="group" aria-labelledby="speed-label">
-              <span id="speed-label" data-i18n="speed"></span>
-              <button type="button" class="chip" data-speed="1">1×</button>
-              <button type="button" class="chip" data-speed="5">5×</button>
-            </div>
             <button type="button" class="btn danger" data-action="reset" data-i18n="resetGame"></button>
           </div>
-          <p class="hint" data-i18n="controlHint"></p>
         </div>
       </section>
 
       <section class="panel history" aria-labelledby="history-title">
         <h2 id="history-title" data-i18n="historyTitle"></h2>
         <svg class="graph" viewBox="0 0 320 150" role="img" aria-labelledby="history-title graph-desc">
-          <line class="axis" x1="30" y1="10" x2="30" y2="130" />
-          <line class="axis" x1="30" y1="130" x2="310" y2="130" />
-          <line class="safe-line" x1="30" y1="58" x2="310" y2="58" />
-          <text class="tick" x="24" y="14" text-anchor="end">100</text>
-          <text class="tick" x="24" y="62" text-anchor="end">60</text>
-          <text class="tick" x="24" y="134" text-anchor="end">0</text>
+          <line class="axis" x1="38" y1="10" x2="38" y2="130" />
+          <line class="axis" x1="38" y1="130" x2="310" y2="130" />
+          <line class="safe-line" x1="38" y1="58" x2="310" y2="58" />
+          <text class="tick" x="30" y="14" text-anchor="end">100</text>
+          <text class="tick" x="30" y="62" text-anchor="end">60</text>
+          <text class="tick" x="30" y="134" text-anchor="end">0</text>
           <polyline id="graph-world" class="line-world" points="" />
           <polyline id="graph-clips" class="line-clips" points="" />
         </svg>
@@ -229,10 +236,10 @@
     <dialog id="reset-dialog" aria-labelledby="reset-title">
       <form method="dialog">
         <h2 id="reset-title" data-i18n="resetTitle"></h2>
-        <p data-i18n="resetText"></p>
+        <p id="reset-text" data-i18n="resetText"></p>
         <div class="actions">
           <button type="submit" class="btn" value="cancel" data-i18n="cancel" autofocus></button>
-          <button type="submit" class="btn danger" value="confirm" data-i18n="resetConfirm"></button>
+          <button type="submit" id="reset-confirm" class="btn danger" value="confirm" data-i18n="resetConfirm"></button>
         </div>
       </form>
     </dialog>

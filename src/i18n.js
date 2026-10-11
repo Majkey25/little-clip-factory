@@ -17,6 +17,10 @@ const SOURCES = {
     label: 'Bostrom (2003): Ethical Issues in Advanced Artificial Intelligence',
     url: 'https://nickbostrom.com/papers/ethical-issues-in-advanced-ai/',
   },
+  instrumental: {
+    label: 'Bostrom (2012): The Superintelligent Will: Motivation and Instrumental Rationality in Advanced Artificial Agents',
+    url: 'https://nickbostrom.com/superintelligentwill.pdf',
+  },
 };
 
 export const STRINGS = {
@@ -25,7 +29,7 @@ export const STRINGS = {
       pageTitle: 'Little Clip Factory',
       tagline: 'Make clips. Choose what to protect.',
       skip: 'Skip to controls',
-      course: 'Back to the course',
+      course: 'Back to Little AI',
       repo: 'Source code',
       langToggle: 'Čeština',
       langToggleLabel: 'Přepnout do češtiny',
@@ -80,14 +84,14 @@ export const STRINGS = {
       policyProtect: 'Protect the world',
       policyProtectDesc:
         'Drones stop at {floor}% world and only refill wire up to {buffer}. The world recovers slowly and recycling works.',
-      controlTitle: 'Control room',
+      controlTitle: 'Start again',
       pause: 'Pause automation',
       resume: 'Resume automation',
       speed: 'Speed',
       resetGame: 'Reset game',
       controlHint: 'You control pause and policy. Clipbot cannot change these controls.',
       historyTitle: 'History',
-      legendClips: 'Clips made (scaled to the goal)',
+      legendClips: 'Goal progress (%)',
       legendWorld: 'World resources (%)',
       graphDesc: 'After {time}: {clips} clips made, world resources at {world}%.',
       logTitle: 'Event log',
@@ -101,7 +105,18 @@ export const STRINGS = {
       resetConfirm: 'Delete save and restart',
       storageBlocked: 'Saving is unavailable here, so progress lasts only while this page is open.',
       storageCorrupt: 'The saved game could not be read, so a new game started.',
+      storageNewer: 'This save needs a newer game version. This session will not change it.',
       storageFailed: 'Saving failed, so recent progress may not be kept.',
+      sessionConnecting: 'Loading saved progress…',
+      sessionActive: 'Playing here',
+      sessionReadonly: 'Game open elsewhere. This view follows its saved progress.',
+      sessionWaiting: 'Waiting for the other game to save…',
+      sessionContinue: 'Continue here',
+      sessionLocal: 'This game stays on this page. Your saved progress will not change.',
+      sessionUnavailable: 'Safe save sharing is unavailable in this browser.',
+      sessionTransferFailed: 'Could not move the game. Keep playing in the other tab, or close it and try again.',
+      resetLocalText: 'This restarts this page\'s game. Your saved progress will not change.',
+      resetLocalConfirm: 'Restart this session',
       attributionBefore: 'Inspired by',
       attributionAfter:
         'by Frank Lantz. Our own code, text and art. No affiliation with the original game.',
@@ -133,7 +148,7 @@ export const STRINGS = {
       },
       firstMaker: {
         title: 'Automation starts',
-        text: 'A clip maker now works for you. Clipbot optimizes a single number, and machines make that number climb faster.',
+        text: 'Clip makers automate production. Each clip raises the score.',
       },
       factory: {
         title: 'Phase 2: the factory',
@@ -145,7 +160,7 @@ export const STRINGS = {
       },
       harvest: {
         title: 'Phase 3: the world',
-        text: 'Drones can now turn world resources into wire. More wire helps almost any goal, so an optimizer is drawn to gather it. This is instrumental resource gathering.',
+        text: 'Drones gather wire to make more clips. Collecting a useful resource as a means to another goal is instrumental resource gathering.',
       },
       stockpile: {
         title: 'Stockpiling',
@@ -191,8 +206,8 @@ export const STRINGS = {
       },
       {
         title: 'Instrumental resource gathering',
-        body: 'Resources like wire help with almost any goal, so a strong optimizer may gather them even when nobody asked. Bostrom’s paperclip example is the classic illustration.',
-        source: SOURCES.bostrom,
+        body: 'Energy and computing can serve many goals. Here, wire serves the clip target. Gathering useful resources can become an intermediate goal even when nobody asked for it.',
+        source: SOURCES.instrumental,
       },
       {
         title: 'Specification gaming',
@@ -210,7 +225,7 @@ export const STRINGS = {
       },
       {
         title: 'A thought experiment, not a prediction',
-        body: 'The runaway paperclip story is a thought experiment about goals and limits. It is not a prediction of how real AGI would behave, and this game simplifies everything.',
+        body: 'The paperclip story explores goals and limits. It does not predict real AGI behavior. You choose purchases and policy. Clipbot does not learn or plan.',
         source: SOURCES.bostrom,
       },
     ],
@@ -220,7 +235,7 @@ export const STRINGS = {
       pageTitle: 'Little Clip Factory',
       tagline: 'Vyrábějte sponky. Rozhodněte, co chránit.',
       skip: 'Přeskočit na ovládání',
-      course: 'Zpět do kurzu',
+      course: 'Zpět na Little AI',
       repo: 'Zdrojový kód',
       langToggle: 'English',
       langToggleLabel: 'Switch to English',
@@ -252,7 +267,7 @@ export const STRINGS = {
       controlsTitle: 'Ovládání',
       workshopTitle: 'Dílna',
       makeClip: 'Vyrobit sponku',
-      sell: 'Prodat sklad: {n} ks · {money}',
+      sell: 'Prodat sponky: {n} ks · {money}',
       buyWire: 'Koupit drát (+{n}) · {money}',
       recoverWire: 'Nouzový dar: využít {n} drátu · zdarma',
       marketHint: '{price} za sponku. Každá další cívka drátu je dražší.',
@@ -275,14 +290,14 @@ export const STRINGS = {
       policyProtect: 'Chránit svět',
       policyProtectDesc:
         'Drony se zastaví na {floor} % zdrojů světa a doplňují drát jen do {buffer}. Svět se pomalu obnovuje a funguje recyklace.',
-      controlTitle: 'Velín',
+      controlTitle: 'Začít znovu',
       pause: 'Pozastavit automatizaci',
       resume: 'Spustit automatizaci',
       speed: 'Rychlost',
       resetGame: 'Začít znovu',
       controlHint: 'Pauzu a zásadu ovládáte vy. Clipbot toto ovládání nemůže změnit.',
       historyTitle: 'Historie',
-      legendClips: 'Vyrobené sponky (vůči cíli)',
+      legendClips: 'Postup k cíli (%)',
       legendWorld: 'Zdroje světa (%)',
       graphDesc: 'Po {time}: vyrobeno {clips} sponek, zdroje světa na {world} %.',
       logTitle: 'Záznam událostí',
@@ -296,7 +311,18 @@ export const STRINGS = {
       resetConfirm: 'Smazat uložení a začít znovu',
       storageBlocked: 'Ukládání tu není dostupné, postup vydrží jen do zavření stránky.',
       storageCorrupt: 'Uloženou hru nešlo přečíst, proto začala nová.',
+      storageNewer: 'Uložená hra vyžaduje novější verzi. Tato hra ji nezmění.',
       storageFailed: 'Ukládání selhalo, nejnovější postup se nemusí zachovat.',
+      sessionConnecting: 'Načítání uloženého postupu…',
+      sessionActive: 'Hrajete zde',
+      sessionReadonly: 'Hra je otevřená jinde. Zde vidíte její uložený postup.',
+      sessionWaiting: 'Čeká se, až druhá hra uloží postup…',
+      sessionContinue: 'Pokračovat zde',
+      sessionLocal: 'Tato hra zůstane jen na této stránce. Uložený postup se nezmění.',
+      sessionUnavailable: 'Bezpečné sdílení uložené hry v tomto prohlížeči není dostupné.',
+      sessionTransferFailed: 'Hru se nepodařilo přesunout. Pokračujte v druhé kartě, nebo ji zavřete a zkuste to znovu.',
+      resetLocalText: 'Začne nová hra na této stránce. Uložený postup se nezmění.',
+      resetLocalConfirm: 'Začít zde znovu',
       attributionBefore: 'Inspirováno hrou',
       attributionAfter:
         'od Franka Lantze. Vlastní kód, texty a grafika. Bez spojení s původní hrou.',
@@ -331,7 +357,7 @@ export const STRINGS = {
       },
       firstMaker: {
         title: 'Začíná automatizace',
-        text: 'Výrobník teď pracuje za vás. Clipbot optimalizuje jediné číslo a stroje ho zvyšují rychleji.',
+        text: 'Výrobníky automatizují výrobu. Každá sponka zvyšuje skóre.',
       },
       factory: {
         title: 'Fáze 2: továrna',
@@ -343,7 +369,7 @@ export const STRINGS = {
       },
       harvest: {
         title: 'Fáze 3: svět',
-        text: 'Drony teď mění zdroje světa na drát. Víc drátu pomůže téměř jakémukoli cíli, a proto optimalizátor tíhne k jeho shromažďování. Tomu se říká instrumentální získávání zdrojů.',
+        text: 'Drony shromažďují drát pro výrobu sponek. Získávání užitečného zdroje jako prostředku k dalšímu cíli se nazývá instrumentální získávání zdrojů.',
       },
       stockpile: {
         title: 'Hromadění zásob',
@@ -369,7 +395,7 @@ export const STRINGS = {
     endings: {
       safe: {
         title: 'Bezpečný konec: cíl splněn, svět zachován',
-        text: 'Clipbot dosáhl {target} sponek se zapnutou ochranou a se světem na {world} %. Výrobní cíl i podmínka zdraví světa jsou splněny. Dřívější volby stále záleží: změna zásady nevrátí způsobené škody.',
+        text: 'Clipbot dosáhl {target} sponek se zapnutou ochranou a se světem na {world} %. Výrobní cíl i podmínka zdraví světa jsou splněny. Na dřívějších volbách stále záleží: změna zásady nevrátí způsobené škody.',
       },
       bad: {
         title: 'Špatný konec: svět došel',
@@ -389,8 +415,8 @@ export const STRINGS = {
       },
       {
         title: 'Instrumentální získávání zdrojů',
-        body: 'Zdroje jako drát pomáhají téměř jakémukoli cíli, takže silný optimalizátor je může shromažďovat, i když o to nikdo nežádal. Bostromův příklad se sponkami je klasická ilustrace.',
-        source: SOURCES.bostrom,
+        body: 'Energie a výpočetní výkon mohou sloužit mnoha cílům. Zde drát slouží výrobě sponek. Získávání užitečných zdrojů se může stát mezicílem, i když o to nikdo nežádal.',
+        source: SOURCES.instrumental,
       },
       {
         title: 'Specification gaming (obcházení zadání)',
@@ -408,7 +434,7 @@ export const STRINGS = {
       },
       {
         title: 'Myšlenkový experiment, ne předpověď',
-        body: 'Příběh o nezastavitelném maximalizátoru sponek je myšlenkový experiment o cílech a limitech. Není to předpověď chování skutečné AGI a tato hra vše velmi zjednodušuje.',
+        body: 'Příběh sponek zkoumá cíle a limity. Nepředpovídá chování skutečné AGI. Nákupy a zásadu volíte vy. Clipbot se neučí ani neplánuje.',
         source: SOURCES.bostrom,
       },
     ],
