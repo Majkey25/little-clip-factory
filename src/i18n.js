@@ -23,14 +23,14 @@ export const STRINGS = {
   en: {
     ui: {
       pageTitle: 'Little Clip Factory',
-      tagline: 'A tiny factory game about goals, guardrails and side effects.',
+      tagline: 'Make clips. Choose what to protect.',
       skip: 'Skip to controls',
       course: 'Back to the course',
       repo: 'Source code',
       langToggle: 'Čeština',
       langToggleLabel: 'Přepnout do češtiny',
       simNote:
-        'Simulation, not an AGI. No AI model or LLM runs here: Clipbot follows a few simple, visible rules so you can watch a narrow goal play out.',
+        'Rule-based simulation. No LLM or AGI runs here.',
       stageTitle: 'Factory floor',
       robotAlt: 'Clipbot, a friendly purple robot holding a paperclip next to a potted plant',
       phaseLabel: 'Phase {n} of 3 · {name}',
@@ -60,7 +60,7 @@ export const STRINGS = {
       sell: 'Sell inventory: {n} · {money}',
       buyWire: 'Buy wire (+{n}) · {money}',
       recoverWire: 'Emergency donation: reuse {n} wire · free',
-      marketHint: 'A clip sells for {price}. Each wire spool costs more than the last.',
+      marketHint: '{price} per clip. Wire gets pricier with each spool.',
       automationTitle: 'Automation',
       buyMaker: 'Buy clip maker · {money}',
       makerInfo: 'Makers: {n} · {rate} clips/s',
@@ -68,7 +68,7 @@ export const STRINGS = {
       harvestInfo: 'Drones: {n} · up to {rate} wire/s',
       harvestLocked: 'Harvest drones need research first.',
       sellAuto: 'The sales cart sells up to {rate} clips/s.',
-      sellManual: 'No sales cart yet, so sell by hand.',
+      sellManual: 'Sell by hand until you research the sales cart.',
       researchTitle: 'Research',
       research: 'Research · {money}',
       researchDone: 'Done',
@@ -85,7 +85,7 @@ export const STRINGS = {
       resume: 'Resume automation',
       speed: 'Speed',
       resetGame: 'Reset game',
-      controlHint: 'You can always pause, switch policy or reset. Clipbot cannot block these buttons.',
+      controlHint: 'You control pause and policy. Clipbot cannot change these controls.',
       historyTitle: 'History',
       legendClips: 'Clips made (scaled to the goal)',
       legendWorld: 'World resources (%)',
@@ -93,7 +93,7 @@ export const STRINGS = {
       logTitle: 'Event log',
       explainTitle: 'Ideas behind the game',
       explainIntro:
-        'The paperclip maximizer is a thought experiment, not a prediction about real AI systems. Each note links an idea to the game and to its source.',
+        'This thought experiment shows what goals leave out. Open an idea for its explanation and source.',
       sourceLabel: 'Source:',
       resetTitle: 'Reset the game?',
       resetText: 'This deletes your saved progress in this browser and starts a new game. It cannot be undone.',
@@ -104,7 +104,7 @@ export const STRINGS = {
       storageFailed: 'Saving failed, so recent progress may not be kept.',
       attributionBefore: 'Inspired by',
       attributionAfter:
-        'by Frank Lantz. Little Clip Factory is an original educational adaptation with its own code, text and artwork. It is not affiliated with the original game.',
+        'by Frank Lantz. Our own code, text and art. No affiliation with the original game.',
       license: 'Code released under the MIT license.',
     },
     events: {
@@ -129,7 +129,7 @@ export const STRINGS = {
     story: {
       start: {
         title: 'Hello, Clipbot',
-        text: 'Clipbot has one job: make paperclips. Make a few by hand, sell them, then buy a clip maker. Clipbot is a narrow bot, not an AGI. It only knows this one game.',
+        text: 'Make a few clips, sell them, then buy a clip maker to automate production.',
       },
       firstMaker: {
         title: 'Automation starts',
@@ -165,7 +165,7 @@ export const STRINGS = {
       },
       corrigibility: {
         title: 'Shutdown works',
-        text: 'You paused Clipbot and it simply stopped. Corrigibility means a system accepts correction or shutdown. Here the off switch is hard-coded. A capable optimizer might have reasons to resist one, which is why researchers study it.',
+        text: 'Clipbot stopped when asked. Accepting correction or shutdown is called corrigibility. This off switch is hard-coded; a capable optimizer might resist shutdown, so real controls need research and testing.',
       },
     },
     endings: {
@@ -218,14 +218,14 @@ export const STRINGS = {
   cs: {
     ui: {
       pageTitle: 'Little Clip Factory',
-      tagline: 'Malá hra o továrně, cílech, pojistkách a vedlejších účincích.',
+      tagline: 'Vyrábějte sponky. Rozhodněte, co chránit.',
       skip: 'Přeskočit na ovládání',
       course: 'Zpět do kurzu',
       repo: 'Zdrojový kód',
       langToggle: 'English',
       langToggleLabel: 'Switch to English',
       simNote:
-        'Simulace, ne AGI. Neběží tu žádný model AI ani LLM: Clipbot se řídí několika jednoduchými a viditelnými pravidly, abyste viděli, kam vede úzce zadaný cíl.',
+        'Simulace s pevnými pravidly. Neběží tu LLM ani AGI.',
       stageTitle: 'Výrobní hala',
       robotAlt: 'Clipbot, přátelský fialový robot s kancelářskou sponkou vedle květináče',
       phaseLabel: 'Fáze {n} ze 3 · {name}',
@@ -255,7 +255,7 @@ export const STRINGS = {
       sell: 'Prodat sklad: {n} ks · {money}',
       buyWire: 'Koupit drát (+{n}) · {money}',
       recoverWire: 'Nouzový dar: využít {n} drátu · zdarma',
-      marketHint: 'Sponka se prodává za {price}. Každá další cívka drátu je dražší.',
+      marketHint: '{price} za sponku. Každá další cívka drátu je dražší.',
       automationTitle: 'Automatizace',
       buyMaker: 'Koupit výrobník · {money}',
       makerInfo: 'Výrobníky: {n} · {rate} sponek/s',
@@ -263,7 +263,7 @@ export const STRINGS = {
       harvestInfo: 'Drony: {n} · až {rate} drátu/s',
       harvestLocked: 'Těžební drony je nejdřív potřeba vyzkoumat.',
       sellAuto: 'Prodejní vozík prodá až {rate} sponek/s.',
-      sellManual: 'Zatím bez prodejního vozíku, prodávejte ručně.',
+      sellManual: 'Do vyzkoumání prodejního vozíku prodávejte ručně.',
       researchTitle: 'Výzkum',
       research: 'Vyzkoumat · {money}',
       researchDone: 'Hotovo',
@@ -280,7 +280,7 @@ export const STRINGS = {
       resume: 'Spustit automatizaci',
       speed: 'Rychlost',
       resetGame: 'Začít znovu',
-      controlHint: 'Vždy můžete pozastavit, změnit zásadu nebo začít znovu. Clipbot tato tlačítka zablokovat nemůže.',
+      controlHint: 'Pauzu a zásadu ovládáte vy. Clipbot toto ovládání nemůže změnit.',
       historyTitle: 'Historie',
       legendClips: 'Vyrobené sponky (vůči cíli)',
       legendWorld: 'Zdroje světa (%)',
@@ -288,7 +288,7 @@ export const STRINGS = {
       logTitle: 'Záznam událostí',
       explainTitle: 'Myšlenky za hrou',
       explainIntro:
-        'Maximalizátor sponek je myšlenkový experiment, ne předpověď o skutečných systémech AI. Každá poznámka propojuje myšlenku se hrou a se zdrojem.',
+        'Myšlenkový experiment ukazuje, co zadaný cíl opomíjí. Rozbalte myšlenku pro vysvětlení a zdroj.',
       sourceLabel: 'Zdroj:',
       resetTitle: 'Začít hru znovu?',
       resetText: 'Tímto smažete uložený postup v tomto prohlížeči a začne nová hra. Nelze to vrátit.',
@@ -299,7 +299,7 @@ export const STRINGS = {
       storageFailed: 'Ukládání selhalo, nejnovější postup se nemusí zachovat.',
       attributionBefore: 'Inspirováno hrou',
       attributionAfter:
-        'od Franka Lantze. Little Clip Factory je původní vzdělávací adaptace s vlastním kódem, texty a grafikou. S původní hrou není nijak spojena.',
+        'od Franka Lantze. Vlastní kód, texty a grafika. Bez spojení s původní hrou.',
       license: 'Kód je zveřejněn pod licencí MIT.',
     },
     events: {
@@ -327,7 +327,7 @@ export const STRINGS = {
     story: {
       start: {
         title: 'Ahoj, Clipbote',
-        text: 'Clipbot má jediný úkol: vyrábět kancelářské sponky. Pár jich vyrobte ručně, prodejte je a kupte výrobník. Clipbot je úzce zaměřený bot, ne AGI. Zná jen tuhle jednu hru.',
+        text: 'Vyrobte pár sponek, prodejte je a kupte výrobník pro automatickou výrobu.',
       },
       firstMaker: {
         title: 'Začíná automatizace',
@@ -363,7 +363,7 @@ export const STRINGS = {
       },
       corrigibility: {
         title: 'Vypnutí funguje',
-        text: 'Pozastavili jste Clipbota a on prostě přestal. Korigovatelnost (corrigibility) znamená, že systém přijme opravu nebo vypnutí. Tady je vypínač napevno v kódu. Schopný optimalizátor by mohl mít důvody se mu bránit, a proto to výzkumníci zkoumají.',
+        text: 'Clipbot se na požádání zastavil. Přijetí opravy nebo vypnutí se nazývá korigovatelnost, anglicky corrigibility. Tento vypínač je napevno v kódu. Schopný optimalizátor se může vypnutí bránit, proto skutečné ovládání vyžaduje výzkum a testování.',
       },
     },
     endings: {
