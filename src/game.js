@@ -131,6 +131,8 @@ export function createState() {
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const grow = (base, growth, count) => Math.round(base * growth ** count * 100) / 100;
 const affordable = (s, cost) => s.funds + 1e-9 >= cost;
+// Fractional production can leave a clip milestone one rounding error short.
+const reachesClips = (clips, target) => clips >= target - Number.EPSILON * target;
 
 /** Price of a full spool; it rises after every spool's worth of wire bought. @param {GameState} s */
 export const spoolCost = (s) =>
@@ -213,7 +215,7 @@ function settle(n) {
   for (const key of AMOUNTS) n[key] = clamp(n[key], 0, CONFIG.maxValue);
   n.world = clamp(n.world, 0, 100);
   if (n.makers > 0) reach(n, 'firstMaker');
-  if (n.phase === 1 && n.clips >= CONFIG.phase2Clips) {
+  if (n.phase === 1 && reachesClips(n.clips, CONFIG.phase2Clips)) {
     n.phase = 2;
     reach(n, 'factory');
   }
@@ -225,11 +227,12 @@ function settle(n) {
   if (n.policy === 'maximize' && n.wire >= CONFIG.stockpileWire) reach(n, 'stockpile');
   if (n.world < CONFIG.sideEffectWorld) reach(n, 'sideEffect');
   const safe = n.policy === 'protect' && n.world >= CONFIG.safeWorld;
-  if ((n.policy === 'maximize' && n.world < CONFIG.specGamingWorld) || (n.clips >= CONFIG.target && !safe && n.world < CONFIG.sideEffectWorld)) {
+  const atTarget = reachesClips(n.clips, CONFIG.target);
+  if ((n.policy === 'maximize' && n.world < CONFIG.specGamingWorld) || (atTarget && !safe && n.world < CONFIG.sideEffectWorld)) {
     reach(n, 'specGaming');
   }
   if (n.ending) return;
-  if (safe && n.clips >= CONFIG.target) finish(n, 'safe');
+  if (safe && atTarget) finish(n, 'safe');
   else if (n.policy === 'maximize' && n.world <= 0) finish(n, 'bad');
 }
 

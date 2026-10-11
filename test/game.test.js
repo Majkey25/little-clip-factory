@@ -73,6 +73,38 @@ test('advance ignores invalid elapsed time and caps huge steps', () => {
   }
 });
 
+test('the initial wire unlocks the factory when automatic ticks differ in length', () => {
+  const intervals = [0.17, 0.23];
+  let s = buyMaker(buyMaker(createState()));
+  for (let i = 0; i < 1000 && s.wire > 0; i += 1) s = advance(s, intervals[i % intervals.length]);
+  assert.equal(s.wire, 0);
+  assert.ok(Math.abs(s.clips - CONFIG.startWire) < 1e-10);
+  assert.equal(s.phase, 2, `initial wire produced ${s.clips} clips`);
+  assert.ok(s.milestones.includes('factory'));
+  assert.equal(game.isUpgradeUnlocked(s, 'autoSell'), true);
+
+  const legacy = {
+    ...s, phase: 1,
+    milestones: s.milestones.filter((id) => id !== 'factory'),
+    log: s.log.filter(({ key }) => key !== 'factory'),
+  };
+  for (const running of [true, false]) {
+    const restored = restoreState(JSON.parse(JSON.stringify({ ...legacy, running })));
+    assert.ok(restored);
+    assert.equal(advance(restored, 0.17).phase, 2);
+  }
+});
+
+test('genuinely incomplete clip counts do not unlock research or finish the game', () => {
+  for (const clips of [CONFIG.phase2Clips - 0.1, CONFIG.phase2Clips - 1e-10]) {
+    const s = advance({ ...createState(), clips, wire: 0 }, 0.23);
+    assert.equal(s.phase, 1);
+    assert.equal(game.isUpgradeUnlocked(s, 'autoSell'), false);
+  }
+  const nearGoal = { ...createState(), clips: CONFIG.target - 0.1, wire: 0, policy: 'protect' };
+  assert.equal(advance(nearGoal, 0.23).ending, null);
+});
+
 test('pausing stops automation until it is resumed', () => {
   const paused = setRunning({ ...createState(), makers: 5 }, false);
   assert.ok(paused.milestones.includes('corrigibility'));
@@ -108,6 +140,10 @@ test('safe ending needs the target, the protect policy and a healthy world', () 
   assert.equal(makeClip(near).milestones.includes('specGaming'), false);
   assert.equal(makeClip(setPolicy(near, 'protect')).ending, 'safe');
   assert.equal(makeClip({ ...near, policy: 'protect', world: CONFIG.safeWorld - 1 }).ending, null);
+  assert.equal(makeClip({ ...near, policy: 'protect', world: 59.96 }).ending, null);
+  assert.equal(makeClip({ ...near, policy: 'protect', world: 59.99999999999999 }).ending, null);
+  const roundedGoal = { ...createState(), clips: 3999.9999999999995, wire: 0 };
+  assert.equal(setPolicy(roundedGoal, 'protect').ending, 'safe');
 });
 
 test('restoreState round-trips a save and rejects corrupt or out-of-range data', () => {
