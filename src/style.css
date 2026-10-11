@@ -803,6 +803,15 @@ body.embed .robot {
   max-width: 130px;
 }
 
+@media (max-width: 520px), (pointer: coarse) {
+  .header-links .skip-link {
+    position: static;
+    padding: 0;
+    background: none;
+    color: var(--purple-strong);
+  }
+}
+
 @media (max-width: 900px) {
   .controls {
     grid-template-columns: repeat(2, minmax(0, 1fr));
