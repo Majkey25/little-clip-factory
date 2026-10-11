@@ -88,7 +88,13 @@
         </dl>
         <div class="world">
           <div class="world-head">
-            <span id="world-label" data-i18n="statWorld"></span>
+            <span class="world-label">
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M3 12h18M12 3c-5 5-5 13 0 18 5-5 5-13 0-18Z" />
+              </svg>
+              <span id="world-label" data-i18n="statWorld"></span>
+            </span>
             <strong id="world-value"></strong>
           </div>
           <div class="gauge" id="world-gauge" role="meter" aria-valuemin="0" aria-valuemax="100" aria-labelledby="world-label">
@@ -105,6 +111,21 @@
 
         <div class="panel">
           <h3 data-i18n="workshopTitle"></h3>
+          <svg class="production-flow" viewBox="0 0 280 46" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <g class="flow-wire">
+              <rect x="5" y="4" width="38" height="38" rx="12" />
+              <path d="M17 12h14M17 34h14M19 12v22M29 12v22M19 17h10M19 22h10M19 27h10" />
+            </g>
+            <path class="flow-arrow" d="M61 23h30m-6-5 6 5-6 5M153 23h30m-6-5 6 5-6 5" />
+            <g class="flow-clip">
+              <rect x="105" y="4" width="38" height="38" rx="12" />
+              <use href="#clip-icon" x="112" y="10" width="24" height="26" />
+            </g>
+            <g class="flow-funds">
+              <rect x="197" y="4" width="38" height="38" rx="12" />
+              <path d="M220 15h-6a4 4 0 0 0 0 8h4a4 4 0 0 1 0 8h-6M216 12v22" />
+            </g>
+          </svg>
           <div class="actions">
             <button type="button" id="make-clip" class="btn primary"></button>
             <button type="button" id="sell" class="btn"></button>
