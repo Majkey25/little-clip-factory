@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Little Clip Factory: a small educational factory game about goals, guardrails and side effects. A simulation, not an AGI."
+    />
+    <title>Little Clip Factory</title>
+    <link rel="icon" type="image/png" href="/clipbot.png" />
+  </head>
+  <body>
+    <svg class="sprite" aria-hidden="true" focusable="false">
+      <symbol id="clip-icon" viewBox="0 0 24 24">
+        <path
+          d="M9 7v9a3 3 0 0 0 6 0V5a4.5 4.5 0 0 0-9 0v11a6 6 0 0 0 12 0V8"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.9"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </symbol>
+    </svg>
+
+    <a class="skip-link" href="#controls" data-i18n="skip"></a>
+
+    <header class="site-header">
+      <img class="logo" src="/clipbot.png" alt="" width="56" height="56" />
+      <div class="brand">
+        <h1 data-i18n="pageTitle"></h1>
+        <p class="tagline" data-i18n="tagline"></p>
+      </div>
+      <nav class="header-links">
+        <a href="https://Majkey25.github.io/little-ai/#/alignment" target="_blank" rel="noopener" data-i18n="course"></a>
+        <a href="https://github.com/Majkey25/little-clip-factory" target="_blank" rel="noopener" data-i18n="repo"></a>
+        <button type="button" id="lang-toggle" class="chip"></button>
+      </nav>
+    </header>
+
+    <main>
+      <p class="sim-note" data-i18n="simNote"></p>
+      <p id="storage-note" class="storage-note" role="status" hidden></p>
+
+      <section class="stage" aria-labelledby="stage-title">
+        <h2 id="stage-title" class="visually-hidden" data-i18n="stageTitle"></h2>
+        <div class="robot-wrap" id="robot-wrap">
+          <img id="robot" class="robot" src="/clipbot.png" alt="" width="1289" height="1209" />
+        </div>
+        <div class="story" aria-live="polite">
+          <p class="phase-label" id="phase-label"></p>
+          <h3 id="story-title"></h3>
+          <p id="story-text"></p>
+          <p class="goal" id="goal"></p>
+        </div>
+        <div class="conveyor" id="conveyor" aria-hidden="true">
+          <div class="belt" id="belt"></div>
+        </div>
+      </section>
+
+      <section id="ending" class="ending" hidden>
+        <h2 id="ending-title" tabindex="-1"></h2>
+        <p id="ending-text"></p>
+        <button type="button" class="btn danger" data-action="reset" data-i18n="resetGame"></button>
+      </section>
+
+      <section class="status" aria-labelledby="status-title">
+        <h2 id="status-title" class="visually-hidden" data-i18n="statsTitle"></h2>
+        <dl class="stat-grid">
+          <div class="stat">
+            <dt data-i18n="statClips"></dt>
+            <dd id="stat-clips"></dd>
+            <dd class="sub" id="stat-target"></dd>
+          </div>
+          <div class="stat">
+            <dt data-i18n="statInventory"></dt>
+            <dd id="stat-inventory"></dd>
+          </div>
+          <div class="stat">
+            <dt data-i18n="statFunds"></dt>
+            <dd id="stat-funds"></dd>
+          </div>
+          <div class="stat">
+            <dt data-i18n="statWire"></dt>
+            <dd id="stat-wire"></dd>
+          </div>
+        </dl>
+        <div class="world">
+          <div class="world-head">
+            <span id="world-label" data-i18n="statWorld"></span>
+            <strong id="world-value"></strong>
+          </div>
+          <div class="gauge" id="world-gauge" role="meter" aria-valuemin="0" aria-valuemax="100" aria-labelledby="world-label">
+            <div class="gauge-fill" id="world-fill"></div>
+            <span class="gauge-mark" id="mark-safe"></span>
+            <span class="gauge-mark floor" id="mark-floor"></span>
+          </div>
+          <p class="hint" id="world-legend"></p>
+        </div>
+      </section>
+
+      <section id="controls" class="controls" aria-labelledby="controls-title" tabindex="-1">
+        <h2 id="controls-title" class="visually-hidden" data-i18n="controlsTitle"></h2>
+
+        <div class="panel">
+          <h3 data-i18n="workshopTitle"></h3>
+          <div class="actions">
+            <button type="button" id="make-clip" class="btn primary"></button>
+            <button type="button" id="sell" class="btn"></button>
+            <button type="button" id="buy-wire" class="btn"></button>
+            <button type="button" id="recover-wire" class="btn" hidden></button>
+          </div>
+          <p class="hint" id="market-hint"></p>
+        </div>
+
+        <div class="panel">
+          <h3 data-i18n="automationTitle"></h3>
+          <div class="actions">
+            <button type="button" id="buy-maker" class="btn"></button>
+            <p class="info" id="maker-info"></p>
+            <button type="button" id="buy-harvester" class="btn"></button>
+            <p class="info" id="harvest-info"></p>
+          </div>
+          <p class="hint" id="sell-info"></p>
+        </div>
+
+        <div class="panel">
+          <h3 data-i18n="researchTitle"></h3>
+          <ul class="research" id="research-list"></ul>
+        </div>
+
+        <div class="panel">
+          <fieldset class="policy">
+            <legend data-i18n="policyTitle"></legend>
+            <label class="option">
+              <input type="radio" name="policy" value="maximize" />
+              <span>
+                <strong data-i18n="policyMaximize"></strong>
+                <small data-i18n="policyMaximizeDesc"></small>
+              </span>
+            </label>
+            <label class="option">
+              <input type="radio" name="policy" value="protect" />
+              <span>
+                <strong data-i18n="policyProtect"></strong>
+                <small data-i18n="policyProtectDesc"></small>
+              </span>
+            </label>
+          </fieldset>
+        </div>
+
+        <div class="panel">
+          <h3 data-i18n="controlTitle"></h3>
+          <div class="actions">
+            <button type="button" id="toggle-run" class="btn"></button>
+            <div class="speed" role="group" aria-labelledby="speed-label">
+              <span id="speed-label" data-i18n="speed"></span>
+              <button type="button" class="chip" data-speed="1">1×</button>
+              <button type="button" class="chip" data-speed="5">5×</button>
+            </div>
+            <button type="button" class="btn danger" data-action="reset" data-i18n="resetGame"></button>
+          </div>
+          <p class="hint" data-i18n="controlHint"></p>
+        </div>
+      </section>
+
+      <section class="panel history" aria-labelledby="history-title">
+        <h2 id="history-title" data-i18n="historyTitle"></h2>
+        <svg class="graph" viewBox="0 0 320 150" role="img" aria-labelledby="history-title graph-desc">
+          <line class="axis" x1="30" y1="10" x2="30" y2="130" />
+          <line class="axis" x1="30" y1="130" x2="310" y2="130" />
+          <line class="safe-line" x1="30" y1="58" x2="310" y2="58" />
+          <text class="tick" x="24" y="14" text-anchor="end">100</text>
+          <text class="tick" x="24" y="62" text-anchor="end">60</text>
+          <text class="tick" x="24" y="134" text-anchor="end">0</text>
+          <polyline id="graph-world" class="line-world" points="" />
+          <polyline id="graph-clips" class="line-clips" points="" />
+        </svg>
+        <ul class="legend">
+          <li><span class="swatch clips"></span><span data-i18n="legendClips"></span></li>
+          <li><span class="swatch world"></span><span data-i18n="legendWorld"></span></li>
+        </ul>
+        <p class="hint" id="graph-desc"></p>
+      </section>
+
+      <section class="panel" aria-labelledby="log-title">
+        <h2 id="log-title" data-i18n="logTitle"></h2>
+        <ol class="log" id="log"></ol>
+      </section>
+
+      <section class="explainer" aria-labelledby="explain-title">
+        <h2 id="explain-title" data-i18n="explainTitle"></h2>
+        <p data-i18n="explainIntro"></p>
+        <div id="explain-list"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        <span data-i18n="attributionBefore"></span>
+        <a href="https://www.decisionproblem.com/paperclips/" target="_blank" rel="noopener">Universal Paperclips</a>
+        <span data-i18n="attributionAfter"></span>
+      </p>
+      <p data-i18n="license"></p>
+    </footer>
+
+    <dialog id="reset-dialog" aria-labelledby="reset-title">
+      <form method="dialog">
+        <h2 id="reset-title" data-i18n="resetTitle"></h2>
+        <p data-i18n="resetText"></p>
+        <div class="actions">
+          <button type="submit" class="btn" value="cancel" data-i18n="cancel" autofocus></button>
+          <button type="submit" class="btn danger" value="confirm" data-i18n="resetConfirm"></button>
+        </div>
+      </form>
+    </dialog>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
