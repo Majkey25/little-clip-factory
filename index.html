@@ -22,18 +22,43 @@
           stroke-linejoin="round"
         />
       </symbol>
+      <symbol id="wire-icon" viewBox="0 0 24 24">
+        <path
+          d="M6 4h12M6 20h12M8 4v16M16 4v16M8 8h8M8 12h8M8 16h8"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.9"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </symbol>
+      <symbol id="funds-icon" viewBox="0 0 24 24">
+        <path
+          d="M15 8.5h-4a2 2 0 0 0 0 4h2a2 2 0 0 1 0 4H9M12 6v12"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.9"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </symbol>
+      <symbol id="world-icon" viewBox="0 0 24 24">
+        <g fill="none" stroke="currentColor" stroke-width="1.6">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M3 12h18M12 3c-5 5-5 13 0 18 5-5 5-13 0-18Z" />
+        </g>
+      </symbol>
     </svg>
 
     <header class="site-header">
+      <a class="skip-link" href="#controls" data-i18n="skip"></a>
       <img class="logo" src="/src/assets/clipbot.webp" alt="" width="56" height="56" />
       <div class="brand">
         <h1 data-i18n="pageTitle"></h1>
         <p class="tagline" data-i18n="tagline"></p>
       </div>
       <nav class="header-links">
-        <a class="skip-link" href="#controls" data-i18n="skip"></a>
         <a href="https://Majkey25.github.io/little-ai/#/alignment" target="_blank" rel="noopener" data-i18n="course"></a>
-        <a href="https://github.com/Majkey25/little-clip-factory" target="_blank" rel="noopener" data-i18n="repo"></a>
         <button type="button" id="lang-toggle" class="chip"></button>
       </nav>
     </header>
@@ -45,22 +70,7 @@
         <p id="session-note" role="status"></p>
         <button type="button" id="continue-here" class="btn small" hidden></button>
       </div>
-
-      <section class="stage" aria-labelledby="stage-title">
-        <h2 id="stage-title" class="visually-hidden" data-i18n="stageTitle"></h2>
-        <div class="robot-wrap" id="robot-wrap">
-          <img id="robot" class="robot" src="/src/assets/clipbot.webp" alt="" width="1289" height="1221" />
-        </div>
-        <div class="story" aria-live="polite">
-          <p class="phase-label" id="phase-label"></p>
-          <h3 id="story-title"></h3>
-          <p id="story-text"></p>
-          <p class="goal" id="goal"></p>
-        </div>
-        <div class="conveyor" id="conveyor" aria-hidden="true">
-          <div class="belt" id="belt"></div>
-        </div>
-      </section>
+      <p id="announcer" class="visually-hidden" role="status"></p>
 
       <section id="ending" class="ending" hidden>
         <h2 id="ending-title" tabindex="-1"></h2>
@@ -68,159 +78,196 @@
         <button type="button" class="btn danger" data-action="reset" data-i18n="resetGame"></button>
       </section>
 
-      <section class="status" aria-labelledby="status-title">
-        <h2 id="status-title" class="visually-hidden" data-i18n="statsTitle"></h2>
-        <dl class="stat-grid">
-          <div class="stat">
-            <dt data-i18n="statClips"></dt>
-            <dd id="stat-clips"></dd>
-            <dd class="sub" id="stat-target"></dd>
+      <div id="controls" class="game" tabindex="-1">
+        <section class="board" aria-labelledby="phase-name">
+          <div class="board-head">
+            <div class="robot-wrap" id="robot-wrap">
+              <img id="robot" class="robot" src="/src/assets/clipbot.webp" alt="" width="1289" height="1221" />
+            </div>
+            <div class="phase">
+              <p class="phase-step" id="phase-step"></p>
+              <h2 id="phase-name"></h2>
+              <p class="goal" id="goal"></p>
+              <div class="progress">
+                <div class="bar" id="phase-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-labelledby="goal">
+                  <div class="bar-fill" id="phase-fill"></div>
+                </div>
+                <span class="progress-text" id="progress-text" aria-hidden="true"></span>
+              </div>
+            </div>
           </div>
-          <div class="stat">
-            <dt data-i18n="statInventory"></dt>
-            <dd id="stat-inventory"></dd>
-          </div>
-          <div class="stat">
-            <dt data-i18n="statFunds"></dt>
-            <dd id="stat-funds"></dd>
-          </div>
-          <div class="stat">
-            <dt data-i18n="statWire"></dt>
-            <dd id="stat-wire"></dd>
-          </div>
-        </dl>
-        <div class="world">
-          <div class="world-head">
-            <span class="world-label">
-              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6">
-                <circle cx="12" cy="12" r="9" />
-                <path d="M3 12h18M12 3c-5 5-5 13 0 18 5-5 5-13 0-18Z" />
-              </svg>
-              <span id="world-label" data-i18n="statWorld"></span>
-            </span>
-            <strong id="world-value"></strong>
-          </div>
-          <div class="gauge" id="world-gauge" role="meter" aria-valuemin="0" aria-valuemax="100" aria-labelledby="world-label">
-            <div class="gauge-fill" id="world-fill"></div>
-            <span class="gauge-mark" id="mark-safe"></span>
-            <span class="gauge-mark floor" id="mark-floor"></span>
-          </div>
-          <p class="hint" id="world-legend"></p>
-        </div>
-      </section>
 
-      <section id="controls" class="controls" aria-labelledby="controls-title" tabindex="-1">
-        <h2 id="controls-title" class="visually-hidden" data-i18n="controlsTitle"></h2>
-
-        <div class="panel">
-          <h3 data-i18n="workshopTitle"></h3>
-          <svg class="production-flow" viewBox="0 0 280 46" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <g class="flow-wire">
-              <rect x="5" y="4" width="38" height="38" rx="12" />
-              <path d="M17 12h14M17 34h14M19 12v22M29 12v22M19 17h10M19 22h10M19 27h10" />
-            </g>
-            <path class="flow-arrow" d="M61 23h30m-6-5 6 5-6 5M153 23h30m-6-5 6 5-6 5" />
-            <g class="flow-clip">
-              <rect x="105" y="4" width="38" height="38" rx="12" />
-              <use href="#clip-icon" x="112" y="10" width="24" height="26" />
-            </g>
-            <g class="flow-funds">
-              <rect x="197" y="4" width="38" height="38" rx="12" />
-              <path d="M220 15h-6a4 4 0 0 0 0 8h4a4 4 0 0 1 0 8h-6M216 12v22" />
-            </g>
-          </svg>
-          <div class="actions">
-            <button type="button" id="make-clip" class="btn primary"></button>
-            <button type="button" id="sell" class="btn"></button>
-            <button type="button" id="buy-wire" class="btn"></button>
-            <button type="button" id="recover-wire" class="btn" hidden></button>
+          <div class="guide" id="guide">
+            <p><strong class="guide-label" data-i18n="guideTitle"></strong> <span id="guide-text"></span></p>
+            <button type="button" id="toggle-run" class="btn small"></button>
           </div>
-          <p class="hint" id="market-hint"></p>
-          <div class="factory-timing">
-            <span id="session-active" class="hint" hidden></span>
-            <button type="button" id="toggle-run" class="btn"></button>
-            <div class="speed" role="group" aria-labelledby="speed-label">
+
+          <div class="stations">
+            <div class="station wire">
+              <dl class="readout">
+                <div class="metric">
+                  <dt><svg class="icon" aria-hidden="true" focusable="false"><use href="#wire-icon" /></svg><span data-i18n="statWire"></span></dt>
+                  <dd id="stat-wire"></dd>
+                </div>
+              </dl>
+              <div class="station-actions">
+                <button type="button" id="buy-wire" class="btn"></button>
+                <button type="button" id="recover-wire" class="btn" hidden></button>
+              </div>
+            </div>
+            <div class="station clips">
+              <dl class="readout">
+                <div class="metric">
+                  <dt><svg class="icon" aria-hidden="true" focusable="false"><use href="#clip-icon" /></svg><span data-i18n="statInventory"></span></dt>
+                  <dd id="stat-inventory"></dd>
+                </div>
+                <div class="metric minor">
+                  <dt data-i18n="statClips"></dt>
+                  <dd id="stat-clips"></dd>
+                </div>
+              </dl>
+              <div class="station-actions">
+                <button type="button" id="make-clip" class="btn primary"></button>
+              </div>
+            </div>
+            <div class="station sales">
+              <dl class="readout">
+                <div class="metric">
+                  <dt><svg class="icon" aria-hidden="true" focusable="false"><use href="#funds-icon" /></svg><span data-i18n="statFunds"></span></dt>
+                  <dd id="stat-funds"></dd>
+                </div>
+                <div class="metric minor">
+                  <dt data-i18n="statPrice"></dt>
+                  <dd id="stat-price"></dd>
+                </div>
+              </dl>
+              <div class="station-actions">
+                <button type="button" id="sell" class="btn"></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="conveyor" id="conveyor" aria-hidden="true">
+            <div class="belt" id="belt"></div>
+          </div>
+
+          <div class="world" id="world" hidden>
+            <div class="world-head">
+              <span class="world-label">
+                <svg class="icon" aria-hidden="true" focusable="false"><use href="#world-icon" /></svg>
+                <span id="world-label" data-i18n="statWorld"></span>
+              </span>
+              <strong id="world-value"></strong>
+            </div>
+            <div class="gauge" id="world-gauge" role="meter" aria-valuemin="0" aria-valuemax="100" aria-labelledby="world-label">
+              <div class="gauge-fill" id="world-fill"></div>
+              <span class="gauge-mark" id="mark-safe"></span>
+              <span class="gauge-mark floor" id="mark-floor"></span>
+            </div>
+            <p class="hint" data-i18n="worldLegend"></p>
+          </div>
+
+          <div class="line-controls">
+            <div class="speed" id="speed" role="group" aria-labelledby="speed-label">
               <span id="speed-label" data-i18n="speed"></span>
               <button type="button" class="chip" data-speed="1">1×</button>
               <button type="button" class="chip" data-speed="5">5×</button>
             </div>
-            <p class="hint" data-i18n="controlHint"></p>
+            <span id="session-active" class="session-active" hidden></span>
           </div>
+
+          <details class="insight" id="insight">
+            <summary><span class="insight-label" data-i18n="insightLabel"></span> <span id="story-title"></span></summary>
+            <p id="story-text"></p>
+          </details>
+        </section>
+
+        <div class="side">
+          <section class="panel" aria-labelledby="automation-title">
+            <h2 id="automation-title" data-i18n="automationTitle"></h2>
+            <div class="buy">
+              <p class="buy-info" id="maker-info"></p>
+              <button type="button" id="buy-maker" class="btn" aria-describedby="maker-need"></button>
+              <p class="need" id="maker-need"></p>
+            </div>
+            <div class="buy" id="harvester-row" hidden>
+              <p class="buy-info" id="harvest-info"></p>
+              <button type="button" id="buy-harvester" class="btn" aria-describedby="harvester-need"></button>
+              <p class="need" id="harvester-need"></p>
+            </div>
+            <p class="hint" id="sell-info"></p>
+          </section>
+
+          <section class="panel" aria-labelledby="research-title">
+            <h2 id="research-title" data-i18n="researchTitle" tabindex="-1"></h2>
+            <p class="hint" id="research-locked" hidden></p>
+            <ul class="research" id="research-list"></ul>
+          </section>
+
+          <section class="panel" id="policy-panel" aria-labelledby="policy-title" hidden>
+            <h2 id="policy-title" data-i18n="policyTitle"></h2>
+            <p class="hint" data-i18n="policyNote"></p>
+            <fieldset class="policy" aria-labelledby="policy-title">
+              <label class="option">
+                <input type="radio" name="policy" value="maximize" />
+                <span>
+                  <strong data-i18n="policyMaximize"></strong>
+                  <small data-i18n="policyMaximizeDesc"></small>
+                </span>
+              </label>
+              <label class="option">
+                <input type="radio" name="policy" value="protect" />
+                <span>
+                  <strong data-i18n="policyProtect"></strong>
+                  <small data-i18n="policyProtectDesc"></small>
+                </span>
+              </label>
+            </fieldset>
+          </section>
         </div>
+      </div>
 
-        <div class="panel">
-          <h3 data-i18n="automationTitle"></h3>
-          <div class="actions">
-            <button type="button" id="buy-maker" class="btn"></button>
-            <p class="info" id="maker-info"></p>
-            <button type="button" id="buy-harvester" class="btn"></button>
-            <p class="info" id="harvest-info"></p>
-          </div>
-          <p class="hint" id="sell-info"></p>
-        </div>
+      <div class="drawers">
+        <details class="drawer">
+          <summary><h2 id="history-title" data-i18n="historyTitle"></h2></summary>
+          <svg class="graph" viewBox="0 0 320 150" role="img" aria-labelledby="history-title graph-desc">
+            <line class="axis" x1="38" y1="10" x2="38" y2="130" />
+            <line class="axis" x1="38" y1="130" x2="310" y2="130" />
+            <line class="safe-line" x1="38" y1="58" x2="310" y2="58" />
+            <text class="tick" x="30" y="14" text-anchor="end">100</text>
+            <text class="tick" x="30" y="62" text-anchor="end">60</text>
+            <text class="tick" x="30" y="134" text-anchor="end">0</text>
+            <polyline id="graph-world" class="line-world" points="" />
+            <polyline id="graph-clips" class="line-clips" points="" />
+          </svg>
+          <ul class="legend">
+            <li><span class="swatch clips"></span><span data-i18n="legendClips"></span></li>
+            <li><span class="swatch world"></span><span data-i18n="legendWorld"></span></li>
+          </ul>
+          <p class="hint" id="graph-desc"></p>
+          <h3 data-i18n="logTitle"></h3>
+          <ol class="log" id="log"></ol>
+        </details>
 
-        <div class="panel">
-          <h3 data-i18n="researchTitle"></h3>
-          <ul class="research" id="research-list"></ul>
-        </div>
+        <details class="drawer">
+          <summary><h2 id="explain-title" data-i18n="explainTitle"></h2></summary>
+          <p data-i18n="explainIntro"></p>
+          <div class="explain-list" id="explain-list"></div>
+        </details>
 
-        <div class="panel">
-          <fieldset class="policy">
-            <legend data-i18n="policyTitle"></legend>
-            <label class="option">
-              <input type="radio" name="policy" value="maximize" />
-              <span>
-                <strong data-i18n="policyMaximize"></strong>
-                <small data-i18n="policyMaximizeDesc"></small>
-              </span>
-            </label>
-            <label class="option">
-              <input type="radio" name="policy" value="protect" />
-              <span>
-                <strong data-i18n="policyProtect"></strong>
-                <small data-i18n="policyProtectDesc"></small>
-              </span>
-            </label>
-          </fieldset>
-        </div>
-
-        <div class="panel reset-panel">
-          <h3 data-i18n="controlTitle"></h3>
-          <div class="actions">
-            <button type="button" class="btn danger" data-action="reset" data-i18n="resetGame"></button>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel history" aria-labelledby="history-title">
-        <h2 id="history-title" data-i18n="historyTitle"></h2>
-        <svg class="graph" viewBox="0 0 320 150" role="img" aria-labelledby="history-title graph-desc">
-          <line class="axis" x1="38" y1="10" x2="38" y2="130" />
-          <line class="axis" x1="38" y1="130" x2="310" y2="130" />
-          <line class="safe-line" x1="38" y1="58" x2="310" y2="58" />
-          <text class="tick" x="30" y="14" text-anchor="end">100</text>
-          <text class="tick" x="30" y="62" text-anchor="end">60</text>
-          <text class="tick" x="30" y="134" text-anchor="end">0</text>
-          <polyline id="graph-world" class="line-world" points="" />
-          <polyline id="graph-clips" class="line-clips" points="" />
-        </svg>
-        <ul class="legend">
-          <li><span class="swatch clips"></span><span data-i18n="legendClips"></span></li>
-          <li><span class="swatch world"></span><span data-i18n="legendWorld"></span></li>
-        </ul>
-        <p class="hint" id="graph-desc"></p>
-      </section>
-
-      <section class="panel" aria-labelledby="log-title">
-        <h2 id="log-title" data-i18n="logTitle"></h2>
-        <ol class="log" id="log"></ol>
-      </section>
-
-      <section class="explainer" aria-labelledby="explain-title">
-        <h2 id="explain-title" data-i18n="explainTitle"></h2>
-        <p data-i18n="explainIntro"></p>
-        <div id="explain-list"></div>
-      </section>
+        <details class="drawer">
+          <summary><h2 data-i18n="optionsTitle"></h2></summary>
+          <ul class="rules">
+            <li data-i18n="ruleSafe"></li>
+            <li data-i18n="ruleBad"></li>
+            <li data-i18n="ruleProtect"></li>
+            <li data-i18n="ruleWire"></li>
+            <li data-i18n="ruleRescue"></li>
+            <li data-i18n="controlHint"></li>
+          </ul>
+          <button type="button" class="btn danger" data-action="reset" data-i18n="resetGame"></button>
+        </details>
+      </div>
     </main>
 
     <footer class="site-footer">
@@ -229,7 +276,10 @@
         <a href="https://www.decisionproblem.com/paperclips/" target="_blank" rel="noopener">Universal Paperclips</a>
         <span data-i18n="attributionAfter"></span>
       </p>
-      <p data-i18n="license"></p>
+      <p>
+        <span data-i18n="license"></span>
+        <a href="https://github.com/Majkey25/little-clip-factory" target="_blank" rel="noopener" data-i18n="repo"></a>
+      </p>
     </footer>
 
     <dialog id="reset-dialog" aria-labelledby="reset-title">

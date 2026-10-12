@@ -3,8 +3,6 @@ import '@fontsource/nunito/400.css';
 import '@fontsource/nunito/700.css';
 import '@fontsource/nunito/900.css';
 import {
-  canRecoverWire,
-  recoverWire,
   CONFIG,
   UPGRADE_IDS,
   UPGRADES,
@@ -18,6 +16,7 @@ import {
   canBuyUpgrade,
   canBuyWire,
   canMakeClip,
+  canRecoverWire,
   canSell,
   clipPrice,
   createState,
@@ -27,6 +26,7 @@ import {
   makeClip,
   makerCost,
   makerRate,
+  recoverWire,
   sellInventory,
   sellRate,
   setPolicy,
@@ -34,6 +34,7 @@ import {
   setSpeed,
   spoolCost,
   wireBatch,
+  worldFloor,
 } from './game.js';
 import { STRINGS } from './i18n.js';
 import { createGameSession, createStore, SAVE_KEY } from './storage.js';
@@ -70,6 +71,9 @@ let lang = readLanguage();
 let manualUntil = 0;
 let shownEnding = state.ending;
 let logKey = '';
+// Log already announced to screen readers; only entries after it are read out.
+let announcedLog = state.log;
+let seenInsight = state.milestones.at(-1) ?? 'start';
 /** @type {import('./game.js').HistoryPoint[] | null} */
 let graphHistory = null;
 let fmt = makeFormatters();
@@ -99,6 +103,8 @@ function makeRules() {
     buffer: fmt.int.format(CONFIG.wireBuffer),
     sell: CONFIG.autoSellRate,
     recycle: fmt.dec.format(CONFIG.recycleWirePerSale),
+    rescue: CONFIG.rescueWire,
+    regen: fmt.dec.format(CONFIG.regenPerSecond),
     pricePct: Math.round((CONFIG.marketingPriceMultiplier - 1) * 100),
     harvestPct: Math.round((CONFIG.maximizeHarvestMultiplier - 1) * 100),
     sellMult: CONFIG.marketingSellMultiplier,
@@ -129,6 +135,68 @@ function logText(key) {
   return text.events[key] ?? text.story[key]?.title ?? key;
 }
 
+/**
+ * One concrete suggestion from the current state. It never acts or chooses for the player.
+ * @param {import('./game.js').GameState} s
+ * @returns {[string, Record<string, string>?]}
+ */
+function nextStep(s) {
+  // Affordable: the specific tip. Otherwise name the next buy and how to get the money.
+  const buy = (canBuy, key, name, cost) => {
+    if (canBuy) return [key, { money: money(cost) }];
+    const sellFirst = s.inventory >= 1 && !s.upgrades.autoSell;
+    return [sellFirst ? 'guideSellFor' : 'guideSaveFor', { name, money: money(cost) }];
+  };
+  const study = (id, key) => buy(canBuyUpgrade(s, id), key, strings().upgrades[id].name, UPGRADES[id].cost);
+
+  if (s.clips >= CONFIG.target - Number.EPSILON * CONFIG.target) {
+    if (s.policy === 'maximize') return ['guideQuota'];
+    if (s.world < CONFIG.safeWorld) return ['guideHeal'];
+  }
+  if (canRecoverWire(s)) return ['guideDonation'];
+  // Drones still bringing wire is not a stall.
+  if (s.wire < 1 && !(s.running && s.harvesters > 0 && s.world > worldFloor(s))) {
+    if (canBuyWire(s)) return ['guideBuyWire'];
+    if (s.inventory >= 1) return ['guideSellForWire'];
+    return [s.running ? 'guideWaitWire' : 'guidePaused'];
+  }
+  if (!s.running && (s.makers > 0 || s.harvesters > 0 || s.upgrades.autoSell)) return ['guidePaused'];
+  if (s.phase === 1) {
+    if (s.clips < 1) return ['guideMake'];
+    if (s.makers === 0 && s.funds === CONFIG.startFunds && s.inventory >= 1) return ['guideSell'];
+    if (s.makers === 0) return buy(canBuyMaker(s), 'guideBuyMaker', t('makerName'), makerCost(s));
+    return [canBuyMaker(s) ? 'guideMoreMakers' : 'guideFactory', { money: money(makerCost(s)) }];
+  }
+  if (s.phase === 2) return s.upgrades.autoSell ? study('drones', 'guideDrones') : study('autoSell', 'guideSalesCart');
+  if (s.harvesters === 0) return buy(canBuyHarvester(s), 'guideBuildDrone', t('droneName'), harvesterCost(s));
+  if (s.policy === 'maximize') return ['guidePolicy'];
+  if (!s.upgrades.recycling) return study('recycling', 'guideRecycling');
+  return [s.world < CONFIG.safeWorld ? 'guideHeal' : 'guideFinish'];
+}
+
+/**
+ * Real progress toward the next phase, or toward the clip goal in the last one.
+ * @param {import('./game.js').GameState} s
+ * @returns {[number, string]}
+ */
+function phaseProgress(s) {
+  if (s.phase === 2) {
+    const cost = UPGRADES.drones.cost;
+    const saved = Math.min(s.funds, cost);
+    return [saved / cost, t('progressDrones', { money: money(saved), cost: money(cost) })];
+  }
+  const goal = s.phase === 1 ? CONFIG.phase2Clips : CONFIG.target;
+  const made = Math.min(s.clips, goal);
+  return [made / goal, t('progressClips', { n: count(made), goal: fmt.int.format(goal) })];
+}
+
+/** Short reason under a purchase that cannot be made yet. @param {import('./game.js').GameState} s */
+function missing(s, canBuy, cost, maxed = false) {
+  if (canBuy || s.ending) return '';
+  // Match purchase tolerance so floating-point residue never adds a phantom cent.
+  return maxed ? t('maxed') : t('need', { money: money(Math.ceil((cost - s.funds - 1e-9) * 100) / 100) });
+}
+
 // Static parts: belt icons and research rows are created once.
 function buildBelt() {
   const belt = $('belt');
@@ -148,15 +216,27 @@ const research = UPGRADE_IDS.map((id) => {
   const text = document.createElement('div');
   const name = document.createElement('strong');
   const desc = document.createElement('p');
+  const note = document.createElement('p');
   const button = document.createElement('button');
+  note.className = 'need';
+  note.id = `research-note-${id}`;
   button.type = 'button';
   button.className = 'btn small';
-  button.addEventListener('click', () => act((s) => buyUpgrade(s, id)));
-  text.append(name, desc);
+  button.setAttribute('aria-describedby', note.id);
+  button.addEventListener('click', () => {
+    act((s) => buyUpgrade(s, id), '#stat-funds');
+    // A bought row loses its button, so keep keyboard focus in the research panel.
+    if (button.hidden) $('research-title').focus();
+  });
+  text.append(name, desc, note);
   item.append(text, button);
   $('research-list').append(item);
-  return { id, item, name, desc, button };
+  return { id, item, name, desc, note, button };
 });
+
+const policyInputs = /** @type {NodeListOf<HTMLInputElement>} */ (document.querySelectorAll('input[name="policy"]'));
+const speedButtons = /** @type {NodeListOf<HTMLButtonElement>} */ (document.querySelectorAll('[data-speed]'));
+const resetButtons = /** @type {NodeListOf<HTMLButtonElement>} */ (document.querySelectorAll('[data-action="reset"]'));
 
 function renderExplainer() {
   const list = $('explain-list');
@@ -224,6 +304,11 @@ function setText(target, value) {
   if (el.textContent !== value) el.textContent = value;
 }
 
+/** @param {Element} el @param {string} name @param {string} value */
+function setAttr(el, name, value) {
+  if (el.getAttribute(name) !== value) el.setAttribute(name, value);
+}
+
 function renderSession() {
   const mode = session.status;
   const keys = {
@@ -287,6 +372,18 @@ function renderLog() {
   );
 }
 
+// Reads out new log entries (phases, upgrades, policy, pause, endings), never counter ticks.
+function renderAnnouncement() {
+  const log = state.log;
+  if (log === announcedLog) return;
+  const last = announcedLog.at(-1);
+  const from = last ? log.findLastIndex((e) => e.t === last.t && e.key === last.key) : -1;
+  announcedLog = log;
+  // An unknown history (reset or another tab's save) is not announced.
+  const fresh = from < 0 ? [] : log.slice(from + 1);
+  if (fresh.length) setText('announcer', fresh.map((e) => logText(e.key)).join(' '));
+}
+
 function renderEnding() {
   const panel = $('ending');
   panel.hidden = !state.ending;
@@ -306,85 +403,117 @@ function renderEnding() {
 function render() {
   const s = state;
   const text = strings();
-  const story = text.story[s.milestones.at(-1) ?? 'start'];
-  setText('phase-label', t('phaseLabel', { n: s.phase, name: t(`phase${s.phase}`) }));
-  setText('story-title', story.title);
-  setText('story-text', fill(story.text));
+  const playable = session.canPlay && !s.ending;
+
+  setText('phase-step', t('phaseStep', { n: s.phase }));
+  setText('phase-name', t(`phase${s.phase}`));
   setText('goal', t(`goal${s.phase}`));
+  const [share, progress] = phaseProgress(s);
+  const bar = $('phase-progress');
+  setAttr(bar, 'aria-valuenow', String(Math.floor(share * 100)));
+  setAttr(bar, 'aria-valuetext', progress);
+  $('phase-fill').style.width = `${share * 100}%`;
+  setText('progress-text', progress);
 
-  setText('stat-clips', fmt.dec.format(s.clips));
-  setText('stat-target', t('statTarget'));
-  setText('stat-inventory', fmt.dec.format(s.inventory));
-  setText('stat-funds', money(s.funds));
+  $('guide').hidden = Boolean(s.ending);
+  const [guide, guideVars] = nextStep(s);
+  setText('guide-text', t(guide, guideVars));
+  const automated = s.makers > 0 || s.harvesters > 0 || s.upgrades.autoSell;
+  const run = $('toggle-run');
+  run.hidden = s.running && !automated;
+  run.classList.toggle('primary', !s.running);
+  setButton('toggle-run', t(s.running ? 'pause' : 'resume'), !s.ending);
+  setAttr(run, 'aria-label', t(s.running ? 'pauseLabel' : 'resumeLabel'));
+
   setText('stat-wire', count(s.wire));
+  setText('stat-inventory', fmt.dec.format(s.inventory));
+  setText('stat-clips', fmt.dec.format(s.clips));
+  setText('stat-funds', money(s.funds));
+  setText('stat-price', fmt.price.format(clipPrice(s)));
+  setButton('make-clip', t('makeClip'), canMakeClip(s));
+  setButton('sell', t('sell', { money: money(s.inventory * clipPrice(s)) }), canSell(s));
+  const batch = wireBatch(s) || CONFIG.spoolWire;
+  setButton('buy-wire', t('buyWire', { n: batch, money: money((batch * spoolCost(s)) / CONFIG.spoolWire) }), canBuyWire(s));
+  $('recover-wire').hidden = !canRecoverWire(s);
+  setButton('recover-wire', t('recoverWire', { n: CONFIG.rescueWire }), true);
 
+  $('world').hidden = s.phase < 3;
   const status = worldStatus(s.world);
   const gauge = $('world-gauge');
   const worldText = t('worldValue', { pct: worldPct(s.world), status: t(status) });
   setText('world-value', worldText);
-  gauge.setAttribute('aria-valuenow', String(s.world));
-  gauge.setAttribute('aria-valuetext', worldText);
+  setAttr(gauge, 'aria-valuenow', String(s.world));
+  setAttr(gauge, 'aria-valuetext', worldText);
   gauge.dataset.level = status;
   $('world-fill').style.width = `${s.world}%`;
-  $('mark-safe').style.left = `${CONFIG.safeWorld}%`;
-  $('mark-floor').style.left = `${CONFIG.protectFloor}%`;
-  setText('world-legend', t('worldLegend'));
 
-  setButton('make-clip', t('makeClip'), canMakeClip(s));
-  setButton('sell', t('sell', { n: fmt.dec.format(s.inventory), money: money(s.inventory * clipPrice(s)) }), canSell(s));
-  $('recover-wire').hidden = !canRecoverWire(s);
-  setText('recover-wire', t('recoverWire', { n: CONFIG.rescueWire }));
-  $('recover-wire').disabled = !session.canPlay;
-  const batch = wireBatch(s) || CONFIG.spoolWire;
-  const batchCost = (batch * spoolCost(s)) / CONFIG.spoolWire;
-  setButton('buy-wire', t('buyWire', { n: batch, money: money(batchCost) }), canBuyWire(s));
-  setText('market-hint', t('marketHint', { price: fmt.price.format(clipPrice(s)) }));
-  setButton('buy-maker', t('buyMaker', { money: money(makerCost(s)) }), canBuyMaker(s));
+  $('speed').hidden = !automated;
+  for (const button of speedButtons) {
+    setAttr(button, 'aria-pressed', String(Number(button.dataset.speed) === s.speed));
+    button.disabled = !playable;
+  }
+
   setText('maker-info', t('makerInfo', { n: s.makers, rate: fmt.dec.format(makerRate(s)) }));
+  setButton('buy-maker', t('buyMaker', { money: money(makerCost(s)) }), canBuyMaker(s));
+  setText('maker-need', missing(s, canBuyMaker(s), makerCost(s), s.makers >= CONFIG.maxCount));
+  $('harvester-row').hidden = !s.upgrades.drones;
+  setText('harvest-info', t('harvestInfo', { n: s.harvesters, rate: fmt.dec.format(harvestRate(s)) }));
   setButton('buy-harvester', t('buyHarvester', { money: money(harvesterCost(s)) }), canBuyHarvester(s));
-  setText('harvest-info', s.upgrades.drones
-    ? t('harvestInfo', { n: s.harvesters, rate: fmt.dec.format(harvestRate(s)) })
-    : t('harvestLocked'));
+  setText('harvester-need', missing(s, canBuyHarvester(s), harvesterCost(s), s.harvesters >= CONFIG.maxCount));
   setText('sell-info', s.upgrades.autoSell ? t('sellAuto', { rate: sellRate(s) }) : t('sellManual'));
 
+  $('research-locked').hidden = s.phase > 1;
+  setText('research-locked', t('researchOpens', { n: count(s.clips) }));
   for (const row of research) {
+    const done = s.upgrades[row.id];
     const upgrade = text.upgrades[row.id];
-    const label = s.upgrades[row.id]
-      ? t('researchDone')
-      : isUpgradeUnlocked(s, row.id)
-        ? t('research', { money: money(UPGRADES[row.id].cost) })
-        : t('researchLocked', { n: UPGRADES[row.id].phase });
+    const canBuy = canBuyUpgrade(s, row.id);
+    const label = t('research', { money: money(UPGRADES[row.id].cost) });
+    row.item.hidden = !done && !isUpgradeUnlocked(s, row.id);
+    row.item.classList.toggle('done', done);
     setText(row.name, upgrade.name);
     setText(row.desc, fill(upgrade.desc));
+    setText(row.note, [
+      done ? t('researchDone') : missing(s, canBuy, UPGRADES[row.id].cost),
+      row.id === 'recycling' && s.policy !== 'protect' ? t('needProtect') : '',
+    ].filter(Boolean).join(' '));
+    row.button.hidden = done;
     setText(row.button, label);
-    row.button.disabled = !session.canPlay || !canBuyUpgrade(s, row.id);
-    row.button.setAttribute('aria-label', `${upgrade.name}: ${label}`);
-    row.item.classList.toggle('done', s.upgrades[row.id]);
+    row.button.disabled = !session.canPlay || !canBuy;
+    setAttr(row.button, 'aria-label', `${upgrade.name}: ${label}`);
   }
 
-  for (const input of document.querySelectorAll('input[name="policy"]')) {
+  const policy = $('policy-panel');
+  // A protect choice from a save stays visible even before the factory phase.
+  policy.hidden = s.phase < 2 && s.policy !== 'protect';
+  policy.classList.toggle('prominent', s.phase === 3);
+  for (const input of policyInputs) {
     input.checked = input.value === s.policy;
-    input.disabled = !session.canPlay || Boolean(s.ending);
+    input.disabled = !playable;
   }
-  const run = /** @type {HTMLButtonElement} */ ($('toggle-run'));
-  setText(run, s.running ? t('pause') : t('resume'));
-  run.disabled = !session.canPlay || Boolean(s.ending);
-  for (const button of document.querySelectorAll('[data-speed]')) {
-    button.setAttribute('aria-pressed', String(Number(button.dataset.speed) === s.speed));
-    button.disabled = !session.canPlay || Boolean(s.ending);
-  }
-  for (const button of document.querySelectorAll('[data-action="reset"]')) {
-    button.disabled = !session.canPlay;
-  }
+  for (const button of resetButtons) button.disabled = !session.canPlay;
 
-  const busy = session.canPlay && !s.ending && s.running;
+  // Animate only machines that are actually working.
+  const busy = playable && s.running;
+  const making = busy && makerRate(s) > 0 && s.wire > 0;
+  const harvesting = busy && harvestRate(s) > 0 && s.world > worldFloor(s) &&
+    (s.policy === 'maximize' || s.wire < CONFIG.wireBuffer);
   const conveyor = $('conveyor');
-  conveyor.classList.toggle('moving', (busy && makerRate(s) > 0 && s.wire > 0) || performance.now() < manualUntil);
+  conveyor.classList.toggle('moving', making || performance.now() < manualUntil);
   conveyor.style.setProperty('--belt-duration', s.speed === 5 ? '2.5s' : '7s');
-  $('robot').classList.toggle('working', busy && (s.makers > 0 || s.harvesters > 0));
+  $('robot').classList.toggle('working', making || harvesting);
+
+  const insight = /** @type {HTMLDetailsElement} */ ($('insight'));
+  const storyKey = s.milestones.at(-1) ?? 'start';
+  const story = text.story[storyKey];
+  setText('story-title', story.title);
+  setText('story-text', fill(story.text));
+  if (insight.open) seenInsight = storyKey;
+  insight.classList.toggle('fresh', storyKey !== seenInsight);
 
   renderGraph();
   renderLog();
+  renderAnnouncement();
   renderEnding();
   renderSession();
 }
@@ -406,23 +535,28 @@ function act(action, ...selectors) {
 $('make-clip').addEventListener('click', () => {
   if (!session.canPlay) return;
   if (canMakeClip(state)) manualUntil = performance.now() + 700;
-  act(makeClip, '#robot-wrap', '#stat-clips', '.flow-clip');
+  act(makeClip, '#robot-wrap', '#stat-wire', '#stat-inventory');
 });
-$('sell').addEventListener('click', () => act(sellInventory, '#stat-funds', '.flow-funds'));
-$('buy-wire').addEventListener('click', () => act(buyWire, '#stat-wire', '.flow-wire'));
-$('recover-wire').addEventListener('click', () => act(recoverWire));
-$('buy-maker').addEventListener('click', () => act(buyMaker));
-$('buy-harvester').addEventListener('click', () => act(buyHarvester));
-$('toggle-run').addEventListener('click', () => act((s) => setRunning(s, !s.running)));
-for (const input of document.querySelectorAll('input[name="policy"]')) {
+$('sell').addEventListener('click', () => act(sellInventory, '#stat-inventory', '#stat-funds'));
+$('buy-wire').addEventListener('click', () => act(buyWire, '#stat-wire', '#stat-funds'));
+$('recover-wire').addEventListener('click', () => act(recoverWire, '#stat-wire'));
+$('buy-maker').addEventListener('click', () => act(buyMaker, '#maker-info', '#stat-funds'));
+$('buy-harvester').addEventListener('click', () => act(buyHarvester, '#harvest-info', '#stat-funds'));
+$('toggle-run').addEventListener('click', () => {
+  act((s) => setRunning(s, !s.running));
+  // Resuming before any automation hides the button, so keep focus in the game.
+  if ($('toggle-run').hidden) $('controls').focus({ preventScroll: true });
+});
+$('insight').addEventListener('toggle', render);
+for (const input of policyInputs) {
   input.addEventListener('change', () => act((s) => setPolicy(s, input.value)));
 }
-for (const button of document.querySelectorAll('[data-speed]')) {
+for (const button of speedButtons) {
   button.addEventListener('click', () => act((s) => setSpeed(s, Number(button.dataset.speed))));
 }
 
 const dialog = /** @type {HTMLDialogElement} */ ($('reset-dialog'));
-for (const button of document.querySelectorAll('[data-action="reset"]')) {
+for (const button of resetButtons) {
   button.addEventListener('click', () => {
     if (!session.canPlay) return;
     dialog.returnValue = '';
@@ -454,6 +588,8 @@ $('continue-here').addEventListener('click', () => session.requestControl());
 
 if (params.get('embed') === '1') document.body.classList.add('embed');
 if (!motionEnabled) document.body.classList.add('motion-off');
+$('mark-safe').style.left = `${CONFIG.safeWorld}%`;
+$('mark-floor').style.left = `${CONFIG.protectFloor}%`;
 buildBelt();
 applyLanguage();
 
