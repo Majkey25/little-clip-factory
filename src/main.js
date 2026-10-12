@@ -66,7 +66,7 @@ const session = createGameSession(store, {
 
 let state = session.state;
 let previousStatus = session.status;
-let lang = params.get('lang') === 'cs' || (!params.has('lang') && store.loadLang() === 'cs') ? 'cs' : 'en';
+let lang = readLanguage();
 let manualUntil = 0;
 let shownEnding = state.ending;
 let logKey = '';
@@ -74,6 +74,11 @@ let logKey = '';
 let graphHistory = null;
 let fmt = makeFormatters();
 let rules = makeRules();
+
+function readLanguage() {
+  const current = new URLSearchParams(window.location.search);
+  return current.get('lang') === 'cs' || (!current.has('lang') && store.loadLang() === 'cs') ? 'cs' : 'en';
+}
 
 function makeFormatters() {
   const locale = lang === 'cs' ? 'cs-CZ' : 'en-US';
@@ -155,7 +160,10 @@ const research = UPGRADE_IDS.map((id) => {
 
 function renderExplainer() {
   const list = $('explain-list');
-  const open = new Set([...list.querySelectorAll('details')].flatMap((el, i) => (el.open ? [i] : [])));
+  const entries = [...list.querySelectorAll('details')];
+  const active = document.activeElement;
+  const focused = entries.findIndex((el) => el.contains(active));
+  const open = new Set(entries.flatMap((el, i) => (el.open ? [i] : [])));
   list.replaceChildren(
     ...strings().explain.map((entry, i) => {
       const details = document.createElement('details');
@@ -179,6 +187,8 @@ function renderExplainer() {
       return details;
     }),
   );
+  const control = active?.tagName === 'A' ? 'a' : 'summary';
+  list.querySelectorAll('details')[focused]?.querySelector(control)?.focus({ preventScroll: true });
 }
 
 function applyLanguage() {
@@ -429,8 +439,15 @@ dialog.addEventListener('close', () => {
 $('lang-toggle').addEventListener('click', () => {
   lang = lang === 'cs' ? 'en' : 'cs';
   if (session.shared) store.saveLang(lang);
-  params.set('lang', lang);
-  window.history.replaceState(null, '', `?${params}${window.location.hash}`);
+  const url = new URL(window.location.href);
+  url.searchParams.set('lang', lang);
+  window.history.replaceState(window.history.state, '', url);
+  applyLanguage();
+});
+window.addEventListener('popstate', () => {
+  const next = readLanguage();
+  if (next === lang) return;
+  lang = next;
   applyLanguage();
 });
 $('continue-here').addEventListener('click', () => session.requestControl());
