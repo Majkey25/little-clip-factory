@@ -13,8 +13,5 @@
   },
   "devDependencies": {
     "vite": "^7.1.0"
-  },
-  "dependencies": {
-    "@fontsource/nunito": "^5.3.0"
   }
 }

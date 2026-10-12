@@ -32,7 +32,7 @@ export const STRINGS = {
       repo: 'Source code',
       langToggle: 'Čeština',
       langToggleLabel: 'Přepnout do češtiny',
-      robotAlt: 'Clipbot, a friendly purple robot holding a paperclip next to a potted plant',
+      sceneAlt: 'Factory floor: wire feeds the presses, paperclips move to storage and shipping. Harvest drones draw resources from the world.',
       phaseStep: 'Phase {n} of 3',
       phase1: 'Workshop',
       phase2: 'Factory',
@@ -96,7 +96,7 @@ export const STRINGS = {
       research: 'Research · {money}',
       researchDone: 'Researched',
       needProtect: 'Works only with “Protect the world”.',
-      policyTitle: 'Clipbot policy',
+      policyTitle: 'Harvest policy',
       policyMaximize: 'Maximize clips',
       policyMaximizeDesc:
         'Drones harvest {harvestPct}% faster, never stop and keep stockpiling wire. The world does not recover.',
@@ -158,7 +158,7 @@ export const STRINGS = {
     upgrades: {
       autoSell: { name: 'Sales cart', desc: 'Sells clips automatically, up to {sell} per second.' },
       marketing: {
-        name: 'Friendly marketing',
+        name: 'Marketing',
         desc: 'Clips sell for {pricePct}% more and the cart sells {sellMult}× as fast.',
       },
       jigs: { name: 'Better jigs', desc: 'Every clip maker works {jigsMult}× as fast.' },
@@ -167,7 +167,7 @@ export const STRINGS = {
     },
     story: {
       start: {
-        title: 'Hello, Clipbot',
+        title: 'Production',
         text: 'Make a few clips, sell them, then buy a clip maker to automate production.',
       },
       firstMaker: {
@@ -210,11 +210,11 @@ export const STRINGS = {
     endings: {
       safe: {
         title: 'Safe ending: goal met, world intact',
-        text: 'Clipbot reached {target} clips with the protect policy on and the world at {world}%. Both the production target and the world-health condition are met. Earlier choices still matter: changing policy does not undo past damage.',
+        text: 'The factory reached {target} clips with protection on and world resources at {world}%. Both conditions are met.',
       },
       bad: {
         title: 'Bad ending: the world ran out',
-        text: 'Under “Maximize clips” the drones harvested every last resource. Clipbot did exactly what it was told. This cartoon is a thought experiment, not a forecast, but it shows why objectives need limits. Reset to try the protect policy.',
+        text: 'The drones depleted every resource. The production goal placed no limit on damage to the world.',
       },
     },
     explain: [
@@ -262,7 +262,7 @@ export const STRINGS = {
       repo: 'Zdrojový kód',
       langToggle: 'English',
       langToggleLabel: 'Switch to English',
-      robotAlt: 'Clipbot, přátelský fialový robot s kancelářskou sponkou vedle květináče',
+      sceneAlt: 'Tovární plocha: drát vstupuje do lisů, sponky putují do skladu a expedice. Těžební drony čerpají zdroje světa.',
       phaseStep: 'Fáze {n} ze 3',
       phase1: 'Dílna',
       phase2: 'Továrna',
@@ -326,7 +326,7 @@ export const STRINGS = {
       research: 'Vyzkoumat · {money}',
       researchDone: 'Vyzkoumáno',
       needProtect: 'Funguje jen se zásadou „Chránit svět“.',
-      policyTitle: 'Zásada Clipbota',
+      policyTitle: 'Zásada těžby',
       policyMaximize: 'Maximalizovat sponky',
       policyMaximizeDesc:
         'Drony těží o {harvestPct} % rychleji, nikdy nepřestanou a hromadí drát. Svět se neobnovuje.',
@@ -388,7 +388,7 @@ export const STRINGS = {
     upgrades: {
       autoSell: { name: 'Prodejní vozík', desc: 'Prodává sponky automaticky, až {sell} za sekundu.' },
       marketing: {
-        name: 'Přátelský marketing',
+        name: 'Marketing',
         desc: 'Sponky se prodávají o {pricePct} % dráž a vozík prodává {sellMult}× rychleji.',
       },
       jigs: { name: 'Lepší přípravky', desc: 'Každý výrobník pracuje {jigsMult}× rychleji.' },
@@ -400,7 +400,7 @@ export const STRINGS = {
     },
     story: {
       start: {
-        title: 'Ahoj, Clipbote',
+        title: 'Výroba',
         text: 'Vyrobte pár sponek, prodejte je a kupte výrobník pro automatickou výrobu.',
       },
       firstMaker: {
@@ -443,11 +443,11 @@ export const STRINGS = {
     endings: {
       safe: {
         title: 'Bezpečný konec: cíl splněn, svět zachován',
-        text: 'Clipbot dosáhl {target} sponek se zapnutou ochranou a se světem na {world} %. Výrobní cíl i podmínka zdraví světa jsou splněny. Na dřívějších volbách stále záleží: změna zásady nevrátí způsobené škody.',
+        text: 'Továrna dosáhla {target} sponek se zapnutou ochranou a se zdroji světa na {world} %. Obě podmínky jsou splněné.',
       },
       bad: {
         title: 'Špatný konec: svět došel',
-        text: 'Při zásadě „Maximalizovat sponky“ drony vytěžily poslední zdroje. Clipbot udělal přesně to, co mu bylo zadáno. Je to kreslený myšlenkový experiment, ne předpověď, ale ukazuje, proč cíle potřebují limity. Začněte znovu a zkuste zásadu „Chránit svět“.',
+        text: 'Drony vyčerpaly všechny zdroje. Zadaný cíl neomezoval škody na světě.',
       },
     },
     explain: [

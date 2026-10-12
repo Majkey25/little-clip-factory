@@ -1,10 +1,8 @@
 # Little Clip Factory
 
-Help Clipbot make paperclips, automate its factory and choose what it protects. This small incremental game shows reward proxies, resource gathering, side effects and guardrails through two different outcomes. English is the default; a complete Czech version is included.
+Build a paperclip factory, automate production and manage the world's resources. The live isometric scene shows presses, conveyors, shipping and harvest drones as you play. English is the default; a complete Czech version is included.
 
 **[Play the game](https://Majkey25.github.io/little-clip-factory/)** · **[Open Little AI](https://Majkey25.github.io/little-ai/)**
-
-It is a simulation, not an AGI. No AI model or LLM runs in the game. Clipbot follows a handful of plain rules in `src/game.js`, and every number on screen comes from those rules.
 
 ## Run it
 
@@ -24,7 +22,7 @@ The current suite covers deterministic game logic and save coordination, includi
 
 - `?lang=cs` starts in Czech. English is the default, and the header button switches languages.
 - `?embed=1` uses a compact header for embedding in an iframe. The game stays fully playable.
-- `?motion=off` disables decorative animations, including the manual clip animation. The operating system's reduced-motion preference is also respected.
+- `?motion=off` disables scene animations, including manual production. The operating system's reduced-motion preference is also respected. Game calculations continue.
 
 Options can be combined, for example `?embed=1&lang=cs&motion=off`.
 
@@ -70,15 +68,16 @@ Sources:
 
 ## Model limitations
 
-- The paperclip maximizer is a thought experiment. This game is a cartoon of it, not a prediction about how real AI systems or a future AGI would behave.
+- The paperclip maximizer is a thought experiment about assigned objectives. These outcomes do not predict the behavior of real AI systems or a future AGI.
 - Clipbot has no learning, planning or model of the world. Its "behavior" is a fixed policy chosen by the player.
 - Real systems do not come with a single world-resource meter, a clean off switch or a guaranteed floor. Here those are hard-coded so the ideas are easy to see.
-- The economy is tuned for a short lesson, not for realism.
+- The economy is simplified.
 
 ## Project layout
 
 - `src/game.js`: pure game state, actions and the `advance` tick function, with no DOM access.
 - `src/main.js`: rendering, input and the game loop.
+- `src/scene.js`: Canvas2D factory graphics, with bounded equipment, a 30 fps cap and no animation while paused, offscreen, hidden or read-only.
 - `src/storage.js`: validated saves, Web Lock ownership, explicit handoff and page-only fallbacks.
 - `src/i18n.js`: English and Czech text.
 - `test/game.test.js`: deterministic Node tests for purchases, bounds, the guardrail, both endings and corrupt input.
@@ -86,7 +85,7 @@ Sources:
 
 ## Static assets and publishing
 
-Fonts and artwork ship locally. Clipbot is a 795,198-byte lossless WebP; composited pixel checks match the original PNG. Vite emits fingerprinted asset filenames. The responsive interface supports keyboard controls, visible focus, phone layouts and reduced motion.
+The game uses system fonts and procedural Canvas2D graphics, with no mascot bitmap or font downloads. Machine drawings represent equipment groups; the HUD gives exact counts. Vite emits fingerprinted asset filenames. The responsive interface supports keyboard controls, visible focus, phone layouts and reduced motion. The press in the scene forwards to the same guarded manufacture action as its normal button.
 
 The GitHub Pages workflow runs tests and builds before uploading `dist`. Select **GitHub Actions** in repository **Settings → Pages**. Pushes to `main` trigger the workflow; a successful deployment publishes the build.
 

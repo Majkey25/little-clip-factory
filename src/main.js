@@ -1,7 +1,4 @@
 import './style.css';
-import '@fontsource/nunito/400.css';
-import '@fontsource/nunito/700.css';
-import '@fontsource/nunito/900.css';
 import {
   CONFIG,
   UPGRADE_IDS,
@@ -38,18 +35,19 @@ import {
 } from './game.js';
 import { STRINGS } from './i18n.js';
 import { createGameSession, createStore, SAVE_KEY } from './storage.js';
+import { createFactoryScene } from './scene.js';
 
 const TICK_MS = 200;
 const SAVE_MS = 2000;
 // Real seconds per tick are capped, so a sleeping tab never fast-forwards the world.
 const MAX_REAL_SECONDS = 1;
-const BELT_ICONS = 14;
 const GRAPH = { left: 38, right: 310, top: 10, bottom: 130 };
 
 const $ = (id) => /** @type {HTMLElement} */ (document.getElementById(id));
 const params = new URLSearchParams(window.location.search);
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const motionEnabled = params.get('motion') !== 'off';
+const factoryScene = createFactoryScene(/** @type {HTMLCanvasElement} */ ($('factory-canvas')));
 const store = createStore();
 const session = createGameSession(store, {
   locks: navigator.locks,
@@ -68,7 +66,6 @@ const session = createGameSession(store, {
 let state = session.state;
 let previousStatus = session.status;
 let lang = readLanguage();
-let manualUntil = 0;
 let shownEnding = state.ending;
 let logKey = '';
 // Log already announced to screen readers; only entries after it are read out.
@@ -197,20 +194,6 @@ function missing(s, canBuy, cost, maxed = false) {
   return maxed ? t('maxed') : t('need', { money: money(Math.ceil((cost - s.funds - 1e-9) * 100) / 100) });
 }
 
-// Static parts: belt icons and research rows are created once.
-function buildBelt() {
-  const belt = $('belt');
-  for (let i = 0; i < BELT_ICONS * 2; i += 1) {
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-    use.setAttribute('href', '#clip-icon');
-    svg.setAttribute('class', `belt-clip tone-${i % 3}`);
-    svg.setAttribute('viewBox', '0 0 24 24');
-    svg.append(use);
-    belt.append(svg);
-  }
-}
-
 const research = UPGRADE_IDS.map((id) => {
   const item = document.createElement('li');
   const text = document.createElement('div');
@@ -237,6 +220,11 @@ const research = UPGRADE_IDS.map((id) => {
 const policyInputs = /** @type {NodeListOf<HTMLInputElement>} */ (document.querySelectorAll('input[name="policy"]'));
 const speedButtons = /** @type {NodeListOf<HTMLButtonElement>} */ (document.querySelectorAll('[data-speed]'));
 const resetButtons = /** @type {NodeListOf<HTMLButtonElement>} */ (document.querySelectorAll('[data-action="reset"]'));
+const press = /** @type {HTMLButtonElement} */ ($('scene-make'));
+press.addEventListener('click', () => {
+  $('make-clip').click();
+  if (press.disabled && !state.ending) $('controls').focus({ preventScroll: true });
+});
 
 function renderExplainer() {
   const list = $('explain-list');
@@ -277,7 +265,7 @@ function applyLanguage() {
   document.documentElement.lang = lang;
   document.title = t('pageTitle');
   for (const el of document.querySelectorAll('[data-i18n]')) setText(/** @type {HTMLElement} */ (el), t(el.dataset.i18n));
-  $('robot').setAttribute('alt', t('robotAlt'));
+  $('factory-canvas').setAttribute('aria-label', t('sceneAlt'));
   const toggle = $('lang-toggle');
   setText(toggle, t('langToggle'));
   toggle.setAttribute('aria-label', t('langToggleLabel'));
@@ -493,15 +481,10 @@ function render() {
   }
   for (const button of resetButtons) button.disabled = !session.canPlay;
 
-  // Animate only machines that are actually working.
-  const busy = playable && s.running;
-  const making = busy && makerRate(s) > 0 && s.wire > 0;
-  const harvesting = busy && harvestRate(s) > 0 && s.world > worldFloor(s) &&
-    (s.policy === 'maximize' || s.wire < CONFIG.wireBuffer);
-  const conveyor = $('conveyor');
-  conveyor.classList.toggle('moving', making || performance.now() < manualUntil);
-  conveyor.style.setProperty('--belt-duration', s.speed === 5 ? '2.5s' : '7s');
-  $('robot').classList.toggle('working', making || harvesting);
+  press.disabled = /** @type {HTMLButtonElement} */ ($('make-clip')).disabled;
+  setAttr(press, 'aria-label', t('makeClip'));
+  setAttr(press, 'title', t('makeClip'));
+  factoryScene.update(s, { motion: motionEnabled && !reducedMotion.matches, canPlay: session.canPlay, lang });
 
   const insight = /** @type {HTMLDetailsElement} */ ($('insight'));
   const storyKey = s.milestones.at(-1) ?? 'start';
@@ -533,9 +516,7 @@ function act(action, ...selectors) {
 }
 
 $('make-clip').addEventListener('click', () => {
-  if (!session.canPlay) return;
-  if (canMakeClip(state)) manualUntil = performance.now() + 700;
-  act(makeClip, '#robot-wrap', '#stat-wire', '#stat-inventory');
+  act(makeClip, '#stat-wire', '#stat-inventory');
 });
 $('sell').addEventListener('click', () => act(sellInventory, '#stat-inventory', '#stat-funds'));
 $('buy-wire').addEventListener('click', () => act(buyWire, '#stat-wire', '#stat-funds'));
@@ -590,8 +571,8 @@ if (params.get('embed') === '1') document.body.classList.add('embed');
 if (!motionEnabled) document.body.classList.add('motion-off');
 $('mark-safe').style.left = `${CONFIG.safeWorld}%`;
 $('mark-floor').style.left = `${CONFIG.protectFloor}%`;
-buildBelt();
 applyLanguage();
+reducedMotion.addEventListener('change', render);
 
 let last = performance.now();
 setInterval(() => {
@@ -610,7 +591,10 @@ document.addEventListener('visibilitychange', () => {
 window.addEventListener('storage', (event) => {
   if (event.key === SAVE_KEY) session.refresh();
 });
-window.addEventListener('pagehide', () => session.stop());
+window.addEventListener('pagehide', (event) => {
+  session.stop();
+  if (!event.persisted) factoryScene.dispose();
+});
 window.addEventListener('pageshow', () => {
   last = performance.now();
   session.start();

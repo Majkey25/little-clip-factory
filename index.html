@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Little Clip Factory: a small educational factory game about goals, guardrails and side effects. A simulation, not an AGI."
+      content="Little Clip Factory: build a paperclip factory, automate production and manage the world's resources."
     />
     <title>Little Clip Factory</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
@@ -52,7 +52,6 @@
 
     <header class="site-header">
       <a class="skip-link" href="#controls" data-i18n="skip"></a>
-      <img class="logo" src="/src/assets/clipbot.webp" alt="" width="56" height="56" />
       <div class="brand">
         <h1 data-i18n="pageTitle"></h1>
       </div>
@@ -79,9 +78,6 @@
       <div id="controls" class="game" tabindex="-1">
         <section class="board" aria-labelledby="phase-name">
           <div class="board-head">
-            <div class="robot-wrap" id="robot-wrap">
-              <img id="robot" class="robot" src="/src/assets/clipbot.webp" alt="" width="1289" height="1221" />
-            </div>
             <div class="phase">
               <p class="phase-step" id="phase-step"></p>
               <h2 id="phase-name"></h2>
@@ -93,6 +89,13 @@
                 <span class="progress-text" id="progress-text" aria-hidden="true"></span>
               </div>
             </div>
+          </div>
+
+          <div class="factory-scene">
+            <canvas id="factory-canvas" width="960" height="480" role="img"></canvas>
+            <button type="button" id="scene-make" class="scene-action scene-make" tabindex="-1">
+              <svg aria-hidden="true" focusable="false"><use href="#clip-icon" /></svg>
+            </button>
           </div>
 
           <div class="guide" id="guide">
@@ -143,10 +146,6 @@
                 <button type="button" id="sell" class="btn"></button>
               </div>
             </div>
-          </div>
-
-          <div class="conveyor" id="conveyor" aria-hidden="true">
-            <div class="belt" id="belt"></div>
           </div>
 
           <div class="world" id="world" hidden>
