@@ -27,14 +27,11 @@ export const STRINGS = {
   en: {
     ui: {
       pageTitle: 'Little Clip Factory',
-      tagline: 'Make clips. Choose what to protect.',
       skip: 'Skip to the factory',
       course: 'Back to Little AI',
       repo: 'Source code',
       langToggle: 'Čeština',
       langToggleLabel: 'Přepnout do češtiny',
-      simNote:
-        'Fixed rules. No LLM or AGI.',
       robotAlt: 'Clipbot, a friendly purple robot holding a paperclip next to a potted plant',
       phaseStep: 'Phase {n} of 3',
       phase1: 'Workshop',
@@ -100,7 +97,6 @@ export const STRINGS = {
       researchDone: 'Researched',
       needProtect: 'Works only with “Protect the world”.',
       policyTitle: 'Clipbot policy',
-      policyNote: 'Drones follow this choice. Clipbot cannot change it.',
       policyMaximize: 'Maximize clips',
       policyMaximizeDesc:
         'Drones harvest {harvestPct}% faster, never stop and keep stockpiling wire. The world does not recover.',
@@ -114,15 +110,12 @@ export const STRINGS = {
       speed: 'Speed',
       insightLabel: 'Insight',
       resetGame: 'Reset game',
-      controlHint: 'You control pause and policy. Clipbot cannot change these controls.',
       historyTitle: 'History and event log',
       legendClips: 'Goal progress (%)',
       legendWorld: 'World resources (%)',
       graphDesc: 'After {time}: {clips} clips made, world resources at {world}%.',
       logTitle: 'Event log',
       explainTitle: 'Ideas behind the game',
-      explainIntro:
-        'This thought experiment shows what goals leave out. Open an idea for its explanation and source.',
       sourceLabel: 'Source:',
       optionsTitle: 'Rules and options',
       ruleSafe: 'Safe ending: {target} clips with “Protect the world” on and world resources at {safe}% or more.',
@@ -150,8 +143,8 @@ export const STRINGS = {
       resetLocalConfirm: 'Restart this session',
       attributionBefore: 'Inspired by',
       attributionAfter:
-        'by Frank Lantz. Our own code, text and art. No affiliation with the original game.',
-      license: 'Code released under the MIT license.',
+        'by Frank Lantz. Our own code and art.',
+      license: 'MIT license.',
     },
     events: {
       paused: 'Automation paused.',
@@ -264,14 +257,11 @@ export const STRINGS = {
   cs: {
     ui: {
       pageTitle: 'Little Clip Factory',
-      tagline: 'Vyrábějte sponky. Rozhodněte, co chránit.',
       skip: 'Přeskočit na továrnu',
       course: 'Zpět na Little AI',
       repo: 'Zdrojový kód',
       langToggle: 'English',
       langToggleLabel: 'Switch to English',
-      simNote:
-        'Pevná pravidla. Bez LLM a AGI.',
       robotAlt: 'Clipbot, přátelský fialový robot s kancelářskou sponkou vedle květináče',
       phaseStep: 'Fáze {n} ze 3',
       phase1: 'Dílna',
@@ -337,7 +327,6 @@ export const STRINGS = {
       researchDone: 'Vyzkoumáno',
       needProtect: 'Funguje jen se zásadou „Chránit svět“.',
       policyTitle: 'Zásada Clipbota',
-      policyNote: 'Drony se touto volbou řídí. Clipbot ji změnit nemůže.',
       policyMaximize: 'Maximalizovat sponky',
       policyMaximizeDesc:
         'Drony těží o {harvestPct} % rychleji, nikdy nepřestanou a hromadí drát. Svět se neobnovuje.',
@@ -351,15 +340,12 @@ export const STRINGS = {
       speed: 'Rychlost',
       insightLabel: 'Postřeh',
       resetGame: 'Začít znovu',
-      controlHint: 'Pauzu a zásadu ovládáte vy. Clipbot toto ovládání nemůže změnit.',
       historyTitle: 'Historie a záznam událostí',
       legendClips: 'Postup k cíli (%)',
       legendWorld: 'Zdroje světa (%)',
       graphDesc: 'Po {time}: vyrobeno {clips} sponek, zdroje světa na {world} %.',
       logTitle: 'Záznam událostí',
       explainTitle: 'Myšlenky za hrou',
-      explainIntro:
-        'Myšlenkový experiment ukazuje, co zadaný cíl opomíjí. Rozbalte myšlenku pro vysvětlení a zdroj.',
       sourceLabel: 'Zdroj:',
       optionsTitle: 'Pravidla a možnosti',
       ruleSafe: 'Bezpečný konec: {target} sponek se zásadou „Chránit svět“ a zdroji světa aspoň {safe} %.',
@@ -387,8 +373,8 @@ export const STRINGS = {
       resetLocalConfirm: 'Začít zde znovu',
       attributionBefore: 'Inspirováno hrou',
       attributionAfter:
-        'od Franka Lantze. Vlastní kód, texty a grafika. Bez spojení s původní hrou.',
-      license: 'Kód je zveřejněn pod licencí MIT.',
+        'od Franka Lantze. Vlastní kód a grafika.',
+      license: 'Licence MIT.',
     },
     events: {
       paused: 'Automatizace pozastavena.',
