@@ -332,7 +332,7 @@ main {
   border-color: #cde1ff;
 }
 .scene-action:disabled { cursor: default; opacity: 0.25; }
-.scene-make { left: 38.3333%; top: 28.125%; }
+.scene-make { left: 12px; bottom: 12px; transform: none; }
 
 .phase-step {
   color: var(--purple-strong);

@@ -2,6 +2,7 @@ import { CONFIG, makerRate, sellRate, worldFloor } from './game.js';
 
 const WIDTH = 960;
 const HEIGHT = 480;
+const MACHINE_X = [2.4, 4.05, 5.5, 6.95];
 const STEEL = { top: '#dde6ec', left: '#8d9faa', right: '#becbd4' };
 const DARK = { top: '#435664', left: '#263843', right: '#344955' };
 const COPPER = { top: '#e7ae71', left: '#a96b3e', right: '#c98750' };
@@ -55,11 +56,11 @@ export function createFactoryScene(canvas) {
     if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke(); }
   }
 
-  function box(x, y, w, d, h, colors, project = iso) {
+  function box(x, y, w, d, h, colors, project = iso, base = 0) {
     const a = project(x, y, h), b = project(x + w, y, h);
     const c = project(x + w, y + d, h), e = project(x, y + d, h);
-    polygon([e, c, project(x + w, y + d), project(x, y + d)], colors.left);
-    polygon([b, project(x + w, y), project(x + w, y + d), c], colors.right);
+    polygon([e, c, project(x + w, y + d, base), project(x, y + d, base)], colors.left);
+    polygon([b, project(x + w, y, base), project(x + w, y + d, base), c], colors.right);
     polygon([a, b, c, e], colors.top);
   }
 
@@ -112,14 +113,14 @@ export function createFactoryScene(canvas) {
   }
 
   function floor() {
-    box(0, 0, 8.5, 5, .2, { top: '#e7edf0', left: '#b4c2cc', right: '#cad6dd' });
-    for (let x = 0; x <= 8; x++) line([iso(x, 0, .2), iso(x, 5, .2)], '#d1dce2', 1);
-    for (let y = 0; y <= 5; y++) line([iso(0, y, .2), iso(8.5, y, .2)], '#d1dce2', 1);
+    box(0, 0, 9.6, 5, 0, { top: '#e7edf0', left: '#b4c2cc', right: '#cad6dd' }, iso, -.2);
+    for (let x = 0; x <= 9; x++) line([iso(x, 0), iso(x, 5)], '#d1dce2', 1);
+    for (let y = 0; y <= 5; y++) line([iso(0, y), iso(9.6, y)], '#d1dce2', 1);
     // Safety strips and a utility duct follow the actual factory floor.
-    line([iso(.1, 4.9, .21), iso(8.4, 4.9, .21)], '#b68b45', 4);
-    line([iso(.2, .2, .22), iso(8.2, .2, .22)], '#9baebc', 6);
-    for (let i = 0; i < 9; i++) {
-      line([iso(i + .1, 4.75, .23), iso(i + .35, 5, .23)], '#e2bc72', 5);
+    line([iso(.1, 4.9, .01), iso(9.5, 4.9, .01)], '#b68b45', 4);
+    line([iso(.2, .2, .02), iso(9.4, .2, .02)], '#9baebc', 6);
+    for (let i = 0; i < 10; i++) {
+      line([iso(i + .1, 4.75, .03), iso(i + .35, 5, .03)], '#e2bc72', 5);
     }
   }
 
@@ -136,8 +137,15 @@ export function createFactoryScene(canvas) {
     ellipse(x, y - 35, 14, 7, '#405764');
     const angle = moving ? phase * 2.2 : 0;
     line([[x, y - 35], [x + Math.cos(angle) * 30, y - 35 + Math.sin(angle) * 13]], '#829baa', 4);
-    if (state.wire > 0) line([iso(.95, 2.6, .7), iso(2.45, 1.75, .6)], '#c18a51', 4);
-    label(options.lang === 'cs' ? 'Drát' : 'Wire', x - 40, y + 67);
+  }
+
+  function wireFeed(count, harvesting) {
+    if (state.wire <= 0 && !harvesting) return;
+    // The shared feed clears the rear roof edge, keeping every inlet visible.
+    line([iso(.95, 2.6, .7), iso(.95, .85, 1.34), iso(MACHINE_X[count] + .6, .85, 1.34)], '#c18a51', 4);
+    for (let i = 0; i <= count; i++) {
+      line([iso(MACHINE_X[i] + .6, .85, 1.34), iso(MACHINE_X[i] + .6, 1.25, 1.34)], '#c18a51', 4);
+    }
   }
 
   function machine(x, manual, active, animate) {
@@ -153,7 +161,7 @@ export function createFactoryScene(canvas) {
     line([iso(x + .62, y + 1.13, 1.13), iso(x + .62, y + 1.13, .82 + lift)], '#cbd7df', 8);
     line([iso(x + .35, y + 1.13, .76 + lift), iso(x + .9, y + 1.13, .76 + lift)], '#dfac72', 6);
     line([iso(x + .24, y + 1.14, .43), iso(x + 1, y + 1.14, .43)], '#8ea6b5', 7);
-    box(x + .25, y + .25, .6, .48, 1.6, manual ? COPPER : DARK);
+    box(x + .25, y + .25, .6, .48, 1.6, manual ? COPPER : DARK, iso, 1.34);
     const [lampX, lampY] = iso(x + 1.18, y + 1.11, 1.16);
     ellipse(lampX, lampY, 3.4, 3.4, active ? '#81e1c0' : '#718896');
     if (manual) {
@@ -164,9 +172,9 @@ export function createFactoryScene(canvas) {
       for (let i = 0; i < 4; i++) line([iso(x + .25 + i * .16, y + .15, 1.35),
         iso(x + .25 + i * .16, y + .5, 1.35)], '#a8bbc7', 2);
     }
-    if (state.upgrades.jigs) box(x + 1.3, y + .45, .28, .45, .75, COPPER);
-    line([iso(x + .6, y + 1.4, .34), iso(x + .6, 3.2, .34)], '#a8bac6', 12);
-    line([iso(x + .6, y + 1.4, .35), iso(x + .6, 3.2, .35)], '#435867', 7);
+    if (state.upgrades.jigs) box(x + 1.26, y + .45, .17, .45, .75, COPPER);
+    line([iso(x + .6, y + 1.1, .5), iso(x + .6, 3.2, .4)], '#a8bac6', 12);
+    line([iso(x + .6, y + 1.1, .51), iso(x + .6, 3.2, .41)], '#435867', 7);
   }
 
   function conveyor(active, animate) {
@@ -178,9 +186,12 @@ export function createFactoryScene(canvas) {
     }
     line([iso(1.55, 3.15, .4), iso(7.7, 3.15, .4)], '#d1a068', 3);
     line([iso(1.55, 3.85, .4), iso(7.7, 3.85, .4)], '#e0b681', 3);
+  }
+
+  function clipsOnBelt(active, animate) {
     if (active) {
       for (let i = 0; i < 4; i++) {
-        const x = start + ((i / 4 + (animate ? phase * .16 : 0)) % 1) * length;
+        const x = 1.65 + ((i / 4 + (animate ? phase * .16 : 0)) % 1) * 5.95;
         const [px, py] = iso(x, 3.5, .42);
         paperclip(px, py, .65, .47);
       }
@@ -188,28 +199,24 @@ export function createFactoryScene(canvas) {
   }
 
   function shipping(active, animate) {
-    const [x, y] = iso(7.55, 3.6, .2);
-    box(7.4, 3.95, .9, .9, .65, { top: '#92aaba', left: '#506c80', right: '#6f8da1' });
-    polygon([iso(7.48, 4.03, .66), iso(8.22, 4.03, .66), iso(8.22, 4.77, .66), iso(7.48, 4.77, .66)], '#293e4b');
+    box(7.7, 3.05, .9, .9, .33, { top: '#92aaba', left: '#506c80', right: '#6f8da1' });
+    polygon([iso(7.78, 3.13, .34), iso(8.52, 3.13, .34), iso(8.52, 3.87, .34), iso(7.78, 3.87, .34)], '#293e4b');
     const visibleStock = Math.min(10, Math.ceil(state.inventory));
     for (let i = 0; i < visibleStock; i++) {
-      const [px, py] = iso(7.68 + (i % 3) * .15, 4.23 + Math.floor(i / 3) * .12, .68 + i * .008);
+      const [px, py] = iso(7.93 + (i % 3) * .15, 3.3 + Math.floor(i / 3) * .12, .36 + i * .008);
       paperclip(px, py, .46, -.4 + (i % 3) * .25);
     }
     if (state.upgrades.autoSell) {
-      box(8.1, 1.4, .48, 1.8, .65, STEEL);
-      const scan = iso(8.12, 2.5, .69);
+      box(8.7, 1.4, .48, 1.8, .65, STEEL);
+      const scan = iso(8.72, 2.5, .69);
       ellipse(scan[0], scan[1], 4, 3, active ? '#5ccaab' : '#6e8797');
-      const offset = active && animate ? Math.sin(phase * 1.5) * 8 : 0;
-      const base = iso(8.55, 2.5);
-      polygon([[base[0] - 26 + offset, base[1] - 30], [base[0] + 31 + offset, base[1] - 4],
-        [base[0] + 31 + offset, base[1] + 24], [base[0] - 26 + offset, base[1] - 2]], '#51778d');
-      polygon([[base[0] - 26 + offset, base[1] - 30], [base[0] - 6 + offset, base[1] - 39],
-        [base[0] + 49 + offset, base[1] - 13], [base[0] + 31 + offset, base[1] - 4]], '#91b8ce');
-      ellipse(base[0] - 8 + offset, base[1] + 7, 8, 11, '#273d4b');
-      ellipse(base[0] + 23 + offset, base[1] + 21, 8, 11, '#273d4b');
+      const offset = active && animate ? Math.sin(phase * 1.5) * .08 : 0;
+      box(8.85 + offset, 3.2, .65, 1.1, .6, { top: '#91b8ce', left: '#51778d', right: '#6f94a9' });
+      for (const y of [3.35, 4.1]) {
+        const wheel = iso(9.5 + offset, y, .16);
+        ellipse(wheel[0], wheel[1], 7, 9, '#273d4b');
+      }
     }
-    label(options.lang === 'cs' ? 'Sponky' : 'Clips', x + 25, y + 98);
   }
 
   function tree(x, y, alive) {
@@ -267,12 +274,6 @@ export function createFactoryScene(canvas) {
     }
     const count = Math.min(3, state.harvesters);
     for (let i = 0; i < count; i++) drone(798, 155 + i * 12, active, animate, i);
-    if (active) {
-      const t = animate ? (phase * .18) % 1 : .5;
-      const x = 750 - t * 120, y = 270 - t * 85;
-      ellipse(x, y, 9, 4, '#c79059', '#f0ce9e');
-    }
-    label(options.lang === 'cs' ? 'Zdroje' : 'Resources', 798, 338);
   }
 
   function draw(now) {
@@ -288,19 +289,31 @@ export function createFactoryScene(canvas) {
     ctx.fillStyle = glow; ctx.fillRect(0, 0, WIDTH, HEIGHT);
     const work = working(now);
     const moving = options.motion && options.canPlay && document.visibilityState !== 'hidden';
+    const makers = Math.min(3, state.makers);
     ellipse(408, 322, 310, 85, '#d8e2e6');
     resources(work.harvesting, moving);
     floor();
     spool(moving && (work.producing || work.manual));
+    if (work.harvesting) {
+      const start = land(.4, 2.8, .25), end = iso(MACHINE_X[makers] + .6, .85, 1.34);
+      const t = moving ? (phase * .18) % 1 : .5;
+      line([start, end], '#b4b9ae', 2);
+      ellipse(start[0] + (end[0] - start[0]) * t, start[1] + (end[1] - start[1]) * t, 9, 4, '#c79059', '#f0ce9e');
+    }
     conveyor(work.producing || work.manual, moving);
     machine(2.4, true, work.manual, moving);
-    for (let i = 0; i < Math.min(3, state.makers); i++) machine(4.05 + i * 1.45, false, work.producing, moving);
+    for (let i = 1; i <= makers; i++) machine(MACHINE_X[i], false, work.producing, moving);
+    wireFeed(makers, work.harvesting);
+    clipsOnBelt(work.producing || work.manual, moving);
     shipping(work.selling || work.sale, moving);
-    label(options.lang === 'cs' ? 'Lis' : 'Press', 368, 55);
     if (state.upgrades.recycling) {
-      box(1.3, 4.4, .65, .65, .55, { top: '#91bcb0', left: '#4e8172', right: '#6b9c8b' });
+      box(1.3, 4.3, .65, .65, .55, { top: '#91bcb0', left: '#4e8172', right: '#6b9c8b' });
       line([iso(1.65, 4.7, .6), iso(.85, 3.3, .6), iso(.7, 2.7, .6)], '#5b907e', 4);
     }
+    label(options.lang === 'cs' ? 'Drát' : 'Wire', 141, 128);
+    label(options.lang === 'cs' ? 'Lis' : 'Press', 368, 40);
+    label(options.lang === 'cs' ? 'Sponky' : 'Clips', 527, 454);
+    if (state.phase >= 3) label(options.lang === 'cs' ? 'Zdroje' : 'Resources', 798, 302);
   }
 
   function animated(now) {
