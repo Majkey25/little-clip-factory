@@ -24,6 +24,7 @@ import {
   makerCost,
   makerRate,
   recoverWire,
+  reachesClips,
   sellInventory,
   sellRate,
   setPolicy,
@@ -46,7 +47,7 @@ const GRAPH = { left: 38, right: 310, top: 10, bottom: 130 };
 const $ = (id) => /** @type {HTMLElement} */ (document.getElementById(id));
 const params = new URLSearchParams(window.location.search);
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-const motionEnabled = params.get('motion') !== 'off';
+let motionEnabled = params.get('motion') !== 'off';
 const factoryScene = createFactoryScene(/** @type {HTMLCanvasElement} */ ($('factory-canvas')));
 const store = createStore();
 const session = createGameSession(store, {
@@ -146,7 +147,7 @@ function nextStep(s) {
   };
   const study = (id, key) => buy(canBuyUpgrade(s, id), key, strings().upgrades[id].name, UPGRADES[id].cost);
 
-  if (s.clips >= CONFIG.target - Number.EPSILON * CONFIG.target) {
+  if (reachesClips(s.clips, CONFIG.target)) {
     if (s.policy === 'maximize') return ['guideQuota'];
     if (s.world < CONFIG.safeWorld) return ['guideHeal'];
   }
@@ -328,6 +329,8 @@ function renderGraph() {
   if (!previous || previous.length !== points.length || points.some((p, i) =>
     p.t !== previous[i].t || p.clips !== previous[i].clips || p.world !== previous[i].world)) {
     const start = points[0].t;
+    setText('graph-time-start', clock(start));
+    setText('graph-time-end', clock(points.at(-1).t));
     const span = Math.max(points.at(-1).t - start, 1);
     const x = (time) => GRAPH.left + ((time - start) / span) * (GRAPH.right - GRAPH.left);
     const y = (share) => GRAPH.bottom - share * (GRAPH.bottom - GRAPH.top);
@@ -338,6 +341,8 @@ function renderGraph() {
   }
   setText('graph-desc', t('graphDesc', {
     time: clock(state.time),
+    from: clock(points[0].t),
+    to: clock(points.at(-1).t),
     clips: fmt.dec.format(state.clips),
     world: worldPct(state.world),
   }));
@@ -600,3 +605,25 @@ window.addEventListener('pageshow', () => {
   session.start();
 });
 session.start();
+
+if (params.get('embed') === '1' && window.parent !== window) {
+  const parentUrl = new URL(document.referrer || window.location.origin);
+  const localParent = window.location.hostname === '127.0.0.1' && parentUrl.hostname === '127.0.0.1';
+  if (parentUrl.origin === window.location.origin || localParent) {
+    window.addEventListener('message', (event) => {
+      if (event.source !== window.parent || event.origin !== parentUrl.origin ||
+        event.data?.type !== 'little-ai:preferences' ||
+        !['en', 'cs'].includes(event.data.lang) || typeof event.data.motion !== 'boolean') return;
+      lang = event.data.lang;
+      motionEnabled = event.data.motion;
+      const url = new URL(window.location.href);
+      url.searchParams.set('lang', lang);
+      if (motionEnabled) url.searchParams.delete('motion');
+      else url.searchParams.set('motion', 'off');
+      window.history.replaceState(window.history.state, '', url);
+      document.body.classList.toggle('motion-off', !motionEnabled);
+      applyLanguage();
+    });
+    window.parent.postMessage({ type: 'little-clip-factory:ready' }, parentUrl.origin);
+  }
+}

@@ -131,8 +131,8 @@ export function createState() {
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const grow = (base, growth, count) => Math.round(base * growth ** count * 100) / 100;
 const affordable = (s, cost) => s.funds + 1e-9 >= cost;
-// Fractional production can leave a clip milestone one rounding error short.
-const reachesClips = (clips, target) => clips >= target - Number.EPSILON * target;
+// Allow 1e-11 of accumulated clip roundoff without rounding stored quantities.
+export const reachesClips = (clips, target) => clips >= target - 1e-11;
 
 /** Price of a full spool; it rises after every spool's worth of wire bought. @param {GameState} s */
 export const spoolCost = (s) =>

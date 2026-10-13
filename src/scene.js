@@ -366,6 +366,14 @@ export function createFactoryScene(canvas) {
     sync();
   }) : null;
   viewportObserver?.observe(canvas);
+  let resolution = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+  function resolutionChanged() {
+    resolution.removeEventListener('change', resolutionChanged);
+    resolution = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+    resolution.addEventListener('change', resolutionChanged);
+    resize();
+  }
+  resolution.addEventListener('change', resolutionChanged);
   if (!observer) window.addEventListener('resize', resize);
   document.addEventListener('visibilitychange', visibility);
   canvas.addEventListener('contextlost', lost);
@@ -395,6 +403,7 @@ export function createFactoryScene(canvas) {
       if (frame) cancelAnimationFrame(frame);
       observer?.disconnect();
       viewportObserver?.disconnect();
+      resolution.removeEventListener('change', resolutionChanged);
       if (!observer) window.removeEventListener('resize', resize);
       document.removeEventListener('visibilitychange', visibility);
       canvas.removeEventListener('contextlost', lost);

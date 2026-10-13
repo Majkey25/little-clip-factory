@@ -151,6 +151,28 @@ test('handoff flushes unsaved purchases and reloads before the new owner can act
   assert.equal(first.state.makers, 1);
 });
 
+test('simultaneous queued handoffs reach every requester without a second click', async (t) => {
+  const f = fixture(t);
+  const first = f.session();
+  const second = f.session();
+  const third = f.session();
+  first.start();
+  second.start();
+  third.start();
+  await flush();
+  first.commit(buyMaker(first.state));
+  second.requestControl();
+  third.requestControl();
+  await flush();
+  assert.equal(first.status, 'readonly');
+  assert.equal(second.status, 'readonly');
+  assert.equal(third.status, 'active');
+  assert.equal(third.state.makers, 1);
+  assert.equal(third.state.funds, 10);
+  assert.equal(first.commit(makeClip(first.state)), false);
+  assert.equal(second.commit(makeClip(second.state)), false);
+});
+
 test('failed saves retry without another action and clear their warning after success', async (t) => {
   const f = fixture(t);
   const session = f.session();
@@ -316,6 +338,49 @@ test('the actual store preserves newer-version saves and rejects malformed versi
     values.set(SAVE_KEY, JSON.stringify(invalid));
     assert.equal(store.loadGame().status, 'corrupt');
   }
+});
+
+test('a full but readable store restores progress and refuses a failed save handoff', async (t) => {
+  const f = fixture(t);
+  let raw = JSON.stringify(buyMaker(createState()));
+  const original = raw;
+  let full = true;
+  const localStorage = {
+    getItem: (key) => key === SAVE_KEY ? raw : null,
+    setItem(key, value) {
+      if (full) throw new DOMException('Full', 'QuotaExceededError');
+      if (key === SAVE_KEY) raw = value;
+    },
+    removeItem() {},
+  };
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'window');
+  Object.defineProperty(globalThis, 'window', { configurable: true, value: { localStorage } });
+  t.after(() => {
+    if (previous) Object.defineProperty(globalThis, 'window', previous);
+    else delete globalThis.window;
+  });
+  const store = createStore();
+  assert.equal(store.loadGame().status, 'loaded');
+  assert.equal(store.loadGame().state.makers, 1);
+  const first = f.session({}, store);
+  const second = f.session({}, store);
+  first.start();
+  second.start();
+  await flush();
+  first.commit(makeClip(first.state));
+  second.requestControl();
+  await flush();
+  assert.equal(first.status, 'active');
+  assert.equal(first.note, 'storageFailed');
+  assert.equal(second.status, 'readonly');
+  assert.equal(raw, original);
+  full = false;
+  assert.equal(first.save(), true);
+  second.requestControl();
+  await flush();
+  assert.equal(second.status, 'active');
+  assert.equal(second.state.makers, 1);
+  assert.equal(second.state.clips, 1);
 });
 
 test('a failed lock query does not demote the active owner', async (t) => {

@@ -708,7 +708,7 @@ details[open] > summary::after {
 
 .research li {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
   gap: 0.4rem 0.75rem;
   padding: 0.55rem 0.7rem;
@@ -736,7 +736,7 @@ details[open] > summary::after {
 }
 
 .research li.done .need {
-  color: var(--world-line);
+  color: var(--muted);
 }
 
 .policy {
@@ -1025,12 +1025,6 @@ body.embed .brand h1 {
   }
   .tick {
     font-size: 18px;
-  }
-}
-
-@media (max-width: 380px) {
-  .research li {
-    grid-template-columns: minmax(0, 1fr);
   }
 }
 

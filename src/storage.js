@@ -2,7 +2,6 @@ import { CONFIG, createState, restoreState } from './game.js';
 
 export const SAVE_KEY = 'little-clip-factory:save';
 const LANG_KEY = 'little-clip-factory:lang';
-const PROBE_KEY = 'little-clip-factory:probe';
 // A real save is a few kilobytes; anything far larger is treated as corrupt.
 const MAX_SAVE_CHARS = 200_000;
 const HANDOFF_WAIT_MS = 10_000;
@@ -10,10 +9,7 @@ const HANDOFF_WAIT_MS = 10_000;
 // Private browsing or strict settings can make localStorage throw on access.
 function openStorage() {
   try {
-    const storage = window.localStorage;
-    storage.setItem(PROBE_KEY, '1');
-    storage.removeItem(PROBE_KEY);
-    return storage;
+    return window.localStorage;
   } catch {
     return null;
   }
@@ -152,7 +148,10 @@ export function createGameSession(store, { locks, channelFactory, onChange }) {
       }
       status = 'active';
       onChange();
-      return new Promise((resolve) => { next.release = () => resolve(undefined); });
+      return new Promise((resolve) => {
+        next.release = () => resolve(undefined);
+        channel?.postMessage({ type: 'owner' });
+      });
     }).catch(() => {
       if (request !== next) return;
       clearRequest();
@@ -205,6 +204,8 @@ export function createGameSession(store, { locks, channelFactory, onChange }) {
           status = 'readonly';
           clearRequest();
           onChange();
+        } else if (data?.type === 'owner' && status === 'waiting') {
+          channel?.postMessage({ type: 'handoff' });
         } else if (data?.type === 'failed' && status === 'waiting') {
           clearRequest();
           status = 'readonly';
