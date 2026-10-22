@@ -37,6 +37,23 @@ import {
 import { STRINGS } from './i18n.js';
 import { createGameSession, createStore, SAVE_KEY } from './storage.js';
 import { createFactoryScene } from './scene.js';
+import { approvedParentOrigin } from './embed.js';
+
+const framed = window.parent !== window;
+const parentOrigin = framed
+  ? approvedParentOrigin(window.location.href, document.referrer, window.parent === window.top)
+  : null;
+if (framed && !parentOrigin) {
+  const link = document.createElement('a');
+  link.href = window.location.href;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.textContent = new URLSearchParams(window.location.search).get('lang') === 'cs'
+    ? 'Otevři hru přímo. Na této stránce ji nelze vložit.'
+    : 'Open the game directly. It cannot be embedded on this page.';
+  document.body.replaceChildren(link);
+  throw new Error('Unapproved game embedding');
+}
 
 const TICK_MS = 200;
 const SAVE_MS = 2000;
@@ -606,24 +623,20 @@ window.addEventListener('pageshow', () => {
 });
 session.start();
 
-if (params.get('embed') === '1' && window.parent !== window) {
-  const parentUrl = new URL(document.referrer || window.location.origin);
-  const localParent = window.location.hostname === '127.0.0.1' && parentUrl.hostname === '127.0.0.1';
-  if (parentUrl.origin === window.location.origin || localParent) {
-    window.addEventListener('message', (event) => {
-      if (event.source !== window.parent || event.origin !== parentUrl.origin ||
-        event.data?.type !== 'little-ai:preferences' ||
-        !['en', 'cs'].includes(event.data.lang) || typeof event.data.motion !== 'boolean') return;
-      lang = event.data.lang;
-      motionEnabled = event.data.motion;
-      const url = new URL(window.location.href);
-      url.searchParams.set('lang', lang);
-      if (motionEnabled) url.searchParams.delete('motion');
-      else url.searchParams.set('motion', 'off');
-      window.history.replaceState(window.history.state, '', url);
-      document.body.classList.toggle('motion-off', !motionEnabled);
-      applyLanguage();
-    });
-    window.parent.postMessage({ type: 'little-clip-factory:ready' }, parentUrl.origin);
-  }
+if (params.get('embed') === '1' && parentOrigin) {
+  window.addEventListener('message', (event) => {
+    if (event.source !== window.parent || event.origin !== parentOrigin ||
+      event.data?.type !== 'little-ai:preferences' ||
+      !['en', 'cs'].includes(event.data.lang) || typeof event.data.motion !== 'boolean') return;
+    lang = event.data.lang;
+    motionEnabled = event.data.motion;
+    const url = new URL(window.location.href);
+    url.searchParams.set('lang', lang);
+    if (motionEnabled) url.searchParams.delete('motion');
+    else url.searchParams.set('motion', 'off');
+    window.history.replaceState(window.history.state, '', url);
+    document.body.classList.toggle('motion-off', !motionEnabled);
+    applyLanguage();
+  });
+  window.parent.postMessage({ type: 'little-clip-factory:ready' }, parentOrigin);
 }

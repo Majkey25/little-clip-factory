@@ -16,12 +16,14 @@ npm run build    # static site in dist/
 npm run preview  # serve the built site on http://127.0.0.1:4174
 ```
 
+For the embedded game in the local Little AI guide, stop the game dev server, run `npm run build`, then `npm run preview`. Only the preview of the public build accepts the opaque iframe origin; the source-serving dev server keeps Vite's default CORS restrictions. Rebuild and reload after game changes.
+
 The current suite covers deterministic game logic and save coordination, including both endings, fractional-production milestones, reset, ownership transfer, failed storage and newer save versions.
 
 ### URL options
 
 - `?lang=cs` starts in Czech. English is the default, and the header button switches languages.
-- `?embed=1` uses a compact header for embedding in an iframe. The game stays fully playable.
+- `?embed=1` uses a compact header for the direct Little AI iframe. Other embedding pages and nested frames cannot start the game or access its save. The documented local guide at `http://127.0.0.1:4173` is also allowed.
 - `?motion=off` disables scene animations, including manual production. The operating system's reduced-motion preference is also respected. Game calculations continue.
 
 Options can be combined, for example `?embed=1&lang=cs&motion=off`.
@@ -41,7 +43,7 @@ Pause automation, switch policy or choose 1× or 5× speed. Reset asks for confi
 
 ## Saves and multiple tabs
 
-Progress uses `localStorage` and is validated on load. One active session holds an exclusive Web Lock for its lifetime. Other tabs, including the embedded game, follow saved progress in a read-only view. **Continue here** requests control: the owner saves before releasing its lock, and the new owner reloads the save before accepting actions. Failed saves are retried. If the owner cannot save for a handoff, it keeps control and its unsaved state.
+Progress uses `localStorage` and is validated on load. One active session holds an exclusive Web Lock for its lifetime. Other standalone tabs follow saved progress in a read-only view. **Continue here** requests control: the owner saves before releasing its lock, and the new owner reloads the save before accepting actions. Failed saves are retried. If the owner cannot save for a handoff, it keeps control and its unsaved state. The guide's opaque-origin sandbox uses page-only play instead; open the full game to continue a saved game. Embedded play does not read, change or migrate existing saves.
 
 If storage cannot be read or safe coordination is unavailable, the game allows page-only play and leaves any existing save unchanged. A save from a newer schema version is also preserved rather than overwritten. Invalid data from a supported schema starts a fresh game with a notice. Reset in page-only mode restarts that page's game without changing the stored save.
 
