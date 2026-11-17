@@ -6,7 +6,7 @@ Build a paperclip factory, automate production and manage the world's resources.
 
 ## Run it
 
-Use Node.js 24 and npm to match CI. Vite 7 requires Node.js 20.19+ on the 20.x line or 22.12+; earlier 22.x releases are unsupported.
+Use Node.js 24 and npm to match CI. Vite 8 requires Node.js 20.19+ on the 20.x line or 22.12+; earlier 22.x releases are unsupported.
 
 ```sh
 npm ci
